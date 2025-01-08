@@ -202,6 +202,7 @@ const AuthButtons: React.FC = () => {
                             type="submit"
                             className="bg-blue-700 text-white px-3 py-1 rounded hover:bg-blue-800 transition"
                         >
+
                             Invia
                         </button>
                         <button
