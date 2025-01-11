@@ -1,78 +1,59 @@
 import React, { useState } from "react";
+import { useAuth } from "../context/AuthContext";
 
-interface UserData {
-    nickname: string;
-    email: string;
-    password: string;
-}
-
+/**
+ * Component che mostra i pulsanti o i form di Login/SignUp
+ * e, se l’utente è loggato, il menu a tendina con Logout.
+ */
 const AuthButtons: React.FC = () => {
-    // Stato per determinare se l'utente è loggato e con quali dati
-    const [user, setUser] = useState<UserData | null>(null);
+    // Preleviamo user e le funzioni dal nostro AuthContext
+    const { user, login, signUp, logout } = useAuth();
 
-    // Stati per controllare la visibilità dei form
+    // Stati per controllare i form
     const [showLoginForm, setShowLoginForm] = useState(false);
     const [showSignUpForm, setShowSignUpForm] = useState(false);
 
-    // Stati per controllare la visibilità del menu a tendina (profilo)
+    // Stati per aprire il menu a tendina profilo
     const [showProfileDropdown, setShowProfileDropdown] = useState(false);
 
-    // Stati per gestire i campi del form di login
+    // Stati per i campi dei form
     const [loginEmail, setLoginEmail] = useState("");
     const [loginPassword, setLoginPassword] = useState("");
 
-    // Stati per gestire i campi del form di registrazione
     const [signUpNickname, setSignUpNickname] = useState("");
     const [signUpEmail, setSignUpEmail] = useState("");
     const [signUpPassword, setSignUpPassword] = useState("");
 
-    // Funzione per simulare login
+    /** Gestione submit login (usa la funzione del context) */
     const handleLoginSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        // Qui in futuro farai la chiamata al server Spring
+        login(loginEmail, loginPassword);
 
-        // Simuliamo un utente con dati fittizi
-        const fakeUser: UserData = {
-            nickname: "Mario",
-            email: loginEmail,
-            password: loginPassword,
-        };
-
-        setUser(fakeUser);
-        // Nascondo il form e pulisco i campi
+        // Puliamo i campi e chiudiamo il form
         setShowLoginForm(false);
         setLoginEmail("");
         setLoginPassword("");
     };
 
-    // Funzione per simulare registrazione
+    /** Gestione submit signUp (usa la funzione del context) */
     const handleSignUpSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        // Qui in futuro farai la chiamata al server Spring
+        signUp(signUpNickname, signUpEmail, signUpPassword);
 
-        // Simuliamo un utente appena registrato
-        const fakeUser: UserData = {
-            nickname: signUpNickname,
-            email: signUpEmail,
-            password: signUpPassword,
-        };
-
-        setUser(fakeUser);
-        // Nascondo il form e pulisco i campi
+        // Puliamo i campi e chiudiamo il form
         setShowSignUpForm(false);
         setSignUpNickname("");
         setSignUpEmail("");
         setSignUpPassword("");
     };
 
-    // Funzione di logout
+    /** Gestione logout */
     const handleLogout = () => {
-        // In futuro rimuoveresti anche il token di sessione/JWT
-        setUser(null);
+        logout();
         setShowProfileDropdown(false);
     };
 
-    // Se l'utente è loggato, mostro il nickname con un menu a tendina
+    // Se l'utente è loggato, mostriamo il nickname e il menu a tendina
     if (user) {
         return (
             <div className="relative">
@@ -80,7 +61,7 @@ const AuthButtons: React.FC = () => {
                     onClick={() => setShowProfileDropdown(!showProfileDropdown)}
                     className="bg-transparent text-white font-semibold px-3 py-2 rounded-lg hover:bg-blue-800 transition"
                 >
-                    Ciao, <strong>{user.nickname}</strong>
+                    Ciao, <strong>{user.nickname}</strong> ({user.role})
                 </button>
 
                 {showProfileDropdown && (
@@ -97,10 +78,9 @@ const AuthButtons: React.FC = () => {
         );
     }
 
-    // Se l'utente NON è loggato, mostro i pulsanti Login/Register (e i modali dei form)
+    // Altrimenti, mostriamo i pulsanti "Login" e "Register"
     return (
         <div className="flex items-center space-x-4">
-            {/* Pulsanti di login/sign up */}
             <button
                 onClick={() => {
                     setShowSignUpForm(false);
@@ -121,7 +101,7 @@ const AuthButtons: React.FC = () => {
                 Register
             </button>
 
-            {/* Form di login */}
+            {/* Form di Login */}
             {showLoginForm && (
                 <div className="absolute top-16 right-4 bg-white text-black p-4 rounded-md shadow-md">
                     <h2 className="font-bold mb-2">Login</h2>
@@ -163,7 +143,7 @@ const AuthButtons: React.FC = () => {
                 </div>
             )}
 
-            {/* Form di registrazione */}
+            {/* Form di Registrazione */}
             {showSignUpForm && (
                 <div className="absolute top-16 right-4 bg-white text-black p-4 rounded-md shadow-md">
                     <h2 className="font-bold mb-2">Registrati</h2>
@@ -202,7 +182,6 @@ const AuthButtons: React.FC = () => {
                             type="submit"
                             className="bg-blue-700 text-white px-3 py-1 rounded hover:bg-blue-800 transition"
                         >
-
                             Invia
                         </button>
                         <button
