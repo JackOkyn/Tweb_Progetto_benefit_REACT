@@ -8,7 +8,7 @@ const Sidebar: React.FC = () => {
     const pages = [
         { name: "Dashboard", icon: <FaHome />, path: "/" },
         { name: "Project", icon: <FaProjectDiagram />, path: "/project" },
-        { name: "My Activity", icon: <FaTasks />, path: "/my-activity" },
+        { name: "MyActivity", icon: <FaTasks />, path: "/my-activity" },
         { name: "Education", icon: <FaGraduationCap />, path: "/education" },
     ];
 
