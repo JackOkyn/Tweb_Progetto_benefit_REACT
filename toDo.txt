@@ -1,10 +1,10 @@
-- Mostrare sul progetto il numero di partecipanti;
+- Far si che una volta premuto su partecipo, nonpossa ripremerlo ancora incrementando il numero
+ma che vada a flaggare la partecipazione e se ripremuta, rimuover ela partecipazione
 
-- FIXED :sistemare i bottoni partecipo ai progetti quando loggato come community
 
 - Fare un check generale
 
--  MAppa dinamica
+-  Implemantare  MAppa dinamica
 
 - iniziare a scrivere bozza del documento di ideazione
 

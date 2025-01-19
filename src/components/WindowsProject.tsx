@@ -1,40 +1,37 @@
-import React, { useState } from "react";
+// src/components/WindowsProject.tsx
+import React from "react";
 import { ProjectData } from "../context/ProjectsContext";
 import { useAuth } from "../context/AuthContext";
 
 interface WindowsProjectProps {
     project: ProjectData;
-    onJoin: (id: number) => void;
+    onJoin: (projectId: number) => void;
 }
 
 const WindowsProject: React.FC<WindowsProjectProps> = ({ project, onJoin }) => {
-    const { user } = useAuth(); // per sapere se l'utente è loggato
+    const { user } = useAuth();
 
-    // Stato locale per gestire l'espansione/anteprima della descrizione
-    const [isExpanded, setIsExpanded] = useState(false);
+    const handleJoinClick = async () => {
+        if (!user) return;
 
-    // Lunghezza massima del testo in anteprima (puoi modificare a piacere)
-    const previewLength = 150;
+        try {
+            // Chiamata reale al server (commentata finché non hai un backend):
+            /*
+            const response = await fetch(`/api/projects/${project.id}/join`, {
+              method: "POST",
+            });
+            if (response.ok) {
+              onJoin(project.id); // aggiorna localmente lo stato
+            } else {
+              console.error("Errore nell'aggiunta ai partecipanti");
+            }
+            */
 
-    // Se la descrizione supera i 150 caratteri, costruiamo una anteprima
-    const descriptionPreview =
-        project.description.length > previewLength
-            ? project.description.slice(0, previewLength) + "..."
-            : project.description;
-
-    const handleJoinClick = () => {
-        onJoin(project.id);
-        /*
-          In un caso reale, potresti fare:
-          fetch(`/api/projects/${project.id}/join`, { method: "POST" })
-            .then(() => onJoin(project.id))
-            .catch((err) => console.error(err));
-        */
-    };
-
-    // Toggle per Espandi/Comprimi
-    const toggleExpand = () => {
-        setIsExpanded((prev) => !prev);
+            // Versione fittizia (senza server):
+            onJoin(project.id);
+        } catch (error) {
+            console.error(error);
+        }
     };
 
     return (
@@ -46,10 +43,11 @@ const WindowsProject: React.FC<WindowsProjectProps> = ({ project, onJoin }) => {
                     fill="currentColor"
                     viewBox="0 0 24 24"
                 >
-                    <path d="M12 12c2.21 0 4-1.79 4-4S14.21
-                            4 12 4s-4 1.79-4 4 1.79 4
-                            4 4zm0 2c-2.67 0-8 1.34-8
-                            4v2h16v-2c0-2.66-5.33-4-8-4z" />
+                    <path d="M12 12c2.21 0
+          4-1.79 4-4S14.21 4 12 4s-4
+          1.79-4 4 1.79 4 4 4zm0
+          2c-2.67 0-8 1.34-8
+          4v2h16v-2c0-2.66-5.33-4-8-4z" />
                 </svg>
                 <span className="font-semibold">{project.author}</span>
             </div>
@@ -60,32 +58,23 @@ const WindowsProject: React.FC<WindowsProjectProps> = ({ project, onJoin }) => {
                 alt={project.title}
                 className="w-full h-auto mb-2 rounded"
             />
+            <p className="text-gray-700 mb-4">{project.description}</p>
 
-            {/* Se isExpanded è true, mostriamo la descrizione completa, altrimenti la preview */}
-            <p className="text-gray-700 mb-4">
-                {isExpanded ? project.description : descriptionPreview}
-            </p>
-
-            <div className="flex items-center space-x-2">
-                {/* Bottone ESPANDI/COMPRIMI (visibile sempre) */}
-                {project.description.length > previewLength && (
-                    <button
-                        onClick={toggleExpand}
-                        className="bg-blue-500 text-white px-3 py-2 rounded hover:bg-blue-600 transition"
-                    >
-                        {isExpanded ? "Comprimi" : "Espandi"}
-                    </button>
-                )}
-
-                {/* Bottone PARTECIPO (visibile solo se utente è loggato) */}
+            <div className="flex items-center space-x-4">
+                {/* Solo se utente loggato */}
                 {user && (
                     <button
                         onClick={handleJoinClick}
-                        className=" right-4 bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition"
+                        className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition"
                     >
                         Partecipo
                     </button>
                 )}
+
+                {/* Mostriamo a tutti il numero di partecipanti */}
+                <span className="text-gray-700">
+          {project.participants} partecipanti
+        </span>
             </div>
         </div>
     );
