@@ -1,0 +1,12 @@
+- Mostrare sul progetto il numero di partecipanti;
+
+- FIXED :sistemare i bottoni partecipo ai progetti quando loggato come community
+
+- Fare un check generale
+
+-  MAppa dinamica
+
+- iniziare a scrivere bozza del documento di ideazione
+
+
+

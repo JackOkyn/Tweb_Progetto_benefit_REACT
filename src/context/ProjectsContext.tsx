@@ -67,12 +67,12 @@ export const ProjectsProvider: React.FC<ProjectsProviderProps> = ({
                     "Aiutaci a raccogliere e misurare i ghiacciai in varie località di sestriere e delle alpi, prendi i tuoi sci e raggugi  punti sulla mappa, li troverai vin brule e pane e salame, tutti noi asisieme festeggeremo. Un progetto interessante su come utilizzare React con Vite per sviluppare applicazioni web velocemente.",
             },
             {
-                id: 2,
-                author: "Giulia Bianchi",
-                title: "Progetto Intelligenza Artificiale",
-                imageUrl: "https://source.unsplash.com/random/801x601/?project",
+                id: 1,
+                author: "Gianna Nannini",
+                title: "Neve come se piovesse",
+                imageUrl: "https://source.unsplash.com/random/800x600/?project",
                 description:
-                    "Un progetto su reti neurali e machine learning. Approfondiamo i modelli di deep learning.",
+                    "Aiutaci a raccogliere e misurare i ghiacciai in varie località di sestriere e delle alpi, prendi i tuoi sci e raggugi  punti sulla mappa, li troverai vin brule e pane e salame, tutti noi asisieme festeggeremo. Un progetto interessante su come utilizzare React con Vite per sviluppare applicazioni web velocemente.",
             },
         ];
 

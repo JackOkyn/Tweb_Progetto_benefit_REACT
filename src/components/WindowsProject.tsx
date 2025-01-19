@@ -47,9 +47,9 @@ const WindowsProject: React.FC<WindowsProjectProps> = ({ project, onJoin }) => {
                     viewBox="0 0 24 24"
                 >
                     <path d="M12 12c2.21 0 4-1.79 4-4S14.21
-          4 12 4s-4 1.79-4 4 1.79 4
-          4 4zm0 2c-2.67 0-8 1.34-8
-          4v2h16v-2c0-2.66-5.33-4-8-4z" />
+                            4 12 4s-4 1.79-4 4 1.79 4
+                            4 4zm0 2c-2.67 0-8 1.34-8
+                            4v2h16v-2c0-2.66-5.33-4-8-4z" />
                 </svg>
                 <span className="font-semibold">{project.author}</span>
             </div>
@@ -81,7 +81,7 @@ const WindowsProject: React.FC<WindowsProjectProps> = ({ project, onJoin }) => {
                 {user && (
                     <button
                         onClick={handleJoinClick}
-                        className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition"
+                        className=" right-4 bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition"
                     >
                         Partecipo
                     </button>
