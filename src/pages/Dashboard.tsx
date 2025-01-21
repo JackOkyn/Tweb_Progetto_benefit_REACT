@@ -21,7 +21,7 @@ const Dashboard: React.FC = () => {
             };
             setData(response);
         };
-        fetchData();
+        fetchData(); //TODO usare chiamate asyn e promise da vedere ne per la gestione delle chiamate con typescript
     }, []);
 
     return (
