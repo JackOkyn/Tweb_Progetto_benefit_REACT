@@ -1,6 +1,3 @@
-- Far si che una volta premuto su partecipo, nonpossa ripremerlo ancora incrementando il numero
-ma che vada a flaggare la partecipazione e se ripremuta, rimuover ela partecipazione
-
 
 - Fare un check generale
 

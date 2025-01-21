@@ -21,7 +21,7 @@ const App: React.FC = () => {
                 <Router>
                     <div className="h-screen w-screen flex flex-col">
                         <Navbar />
-                        <div className="flex flex-1">
+                        <div className="flex flex-1 ">
                             <Sidebar />
                             <main className="flex-1 p-6 bg-gray-100 overflow-y-auto">
                                 <Routes>

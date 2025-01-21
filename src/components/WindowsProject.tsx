@@ -1,34 +1,31 @@
 // src/components/WindowsProject.tsx
 import React from "react";
-import { ProjectData } from "../context/ProjectsContext";
+import { ProjectData, useProjects } from "../context/ProjectsContext";
 import { useAuth } from "../context/AuthContext";
 
 interface WindowsProjectProps {
     project: ProjectData;
-    onJoin: (projectId: number) => void;
 }
 
-const WindowsProject: React.FC<WindowsProjectProps> = ({ project, onJoin }) => {
+const WindowsProject: React.FC<WindowsProjectProps> = ({ project }) => {
     const { user } = useAuth();
+    const { myActivity, joinProject, leaveProject } = useProjects();
 
-    const handleJoinClick = async () => {
+    // Verifichiamo se il progetto è già in myActivity
+    const isParticipant = myActivity.some((p) => p.id === project.id);
+
+    // Gestione click (join/leave) + eventuale fetch
+    const handleToggleParticipation = async () => {
         if (!user) return;
 
         try {
-            // Chiamata reale al server (commentata finché non hai un backend):
-            /*
-            const response = await fetch(`/api/projects/${project.id}/join`, {
-              method: "POST",
-            });
-            if (response.ok) {
-              onJoin(project.id); // aggiorna localmente lo stato
+            if (isParticipant) {
+                // In futuro: fetch(`/api/projects/${project.id}/leave`, { method: "DELETE" })...
+                leaveProject(project.id);
             } else {
-              console.error("Errore nell'aggiunta ai partecipanti");
+                // In futuro: fetch(`/api/projects/${project.id}/join`, { method: "POST" })...
+                joinProject(project.id);
             }
-            */
-
-            // Versione fittizia (senza server):
-            onJoin(project.id);
         } catch (error) {
             console.error(error);
         }
@@ -61,13 +58,19 @@ const WindowsProject: React.FC<WindowsProjectProps> = ({ project, onJoin }) => {
             <p className="text-gray-700 mb-4">{project.description}</p>
 
             <div className="flex items-center space-x-4">
-                {/* Solo se utente loggato */}
+                {/* Se l'utente è loggato, mostriamo un singolo bottone che alterna "Partecipo" / "Annulla partecipazione" */}
                 {user && (
                     <button
-                        onClick={handleJoinClick}
-                        className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition"
+                        onClick={handleToggleParticipation}
+                        className={`
+              px-4 py-2 rounded transition text-white
+              ${isParticipant
+                            ? "bg-orange-600 hover:bg-orange-700" // gestione colore bottone "partecipa" 
+                            : "bg-green-500 hover:bg-green-600"   
+                        }
+            `}
                     >
-                        Partecipo
+                        {isParticipant ? "Annulla partecipazione" : "Partecipo"}
                     </button>
                 )}
 
