@@ -15,7 +15,7 @@ export interface ProjectData {
     title: string;
     imageUrl: string;
     description: string;
-    participants: number; // Numero di partecipanti
+    participants: number;
 }
 
 /** Struttura del contesto */
@@ -23,40 +23,31 @@ interface ProjectsContextType {
     projects: ProjectData[];
     myActivity: ProjectData[];
     joinProject: (projectId: number) => void;
-    leaveProject: (projectId: number) => void; // <-- nuova funzione
+    leaveProject: (projectId: number) => void;
+    addProject: (newProj: Omit<ProjectData, "id" | "participants">) => void;
+    updateProject: (updated: ProjectData) => void; // <-- nuova funzione
 }
 
-/** Creiamo il contesto con valori di default */
 const ProjectsContext = createContext<ProjectsContextType>({
     projects: [],
     myActivity: [],
     joinProject: () => {},
     leaveProject: () => {},
+    addProject: () => {},
+    updateProject: () => {},
 });
 
-/** Props del Provider */
 interface ProjectsProviderProps {
     children: ReactNode;
 }
 
-/**
- * Provider dei progetti:
- * - gestisce la lista "projects",
- * - gestisce "myActivity",
- * - offre funzioni joinProject e leaveProject
- */
-export const ProjectsProvider: React.FC<ProjectsProviderProps> = ({
-                                                                      children,
-                                                                  }) => {
-    const { user } = useAuth(); // L'utente loggato (o null se non loggato)
+export const ProjectsProvider: React.FC<ProjectsProviderProps> = ({ children }) => {
+    const { user } = useAuth();
 
     const [projects, setProjects] = useState<ProjectData[]>([]);
     const [myActivity, setMyActivity] = useState<ProjectData[]>([]);
 
-    /**
-     * Carichiamo fittiziamente i progetti dal "server".
-     * In futuro: fetch("/api/projects")...
-     */
+    // Caricamento fittizio
     useEffect(() => {
         const fakeProjects: ProjectData[] = [
             {
@@ -64,8 +55,7 @@ export const ProjectsProvider: React.FC<ProjectsProviderProps> = ({
                 author: "Mario Rossi",
                 title: "Progetto React + Vite",
                 imageUrl: "https://source.unsplash.com/random/800x600/?project",
-                description:
-                    "Un progetto interessante su come utilizzare React con Vite per sviluppare applicazioni web velocemente.",
+                description: "Un progetto su come utilizzare React con Vite.",
                 participants: 2,
             },
             {
@@ -73,41 +63,29 @@ export const ProjectsProvider: React.FC<ProjectsProviderProps> = ({
                 author: "Giulia Bianchi",
                 title: "Progetto Intelligenza Artificiale",
                 imageUrl: "https://source.unsplash.com/random/801x601/?project",
-                description:
-                    "Un progetto su reti neurali e machine learning. Approfondiamo i modelli di deep learning.",
+                description: "Machine learning e reti neurali.",
                 participants: 5,
             },
         ];
         setProjects(fakeProjects);
     }, []);
 
-    /**
-     * Se l'utente effettua il login/logout, carichiamo/svuotiamo myActivity (fittiziamente).
-     */
+    // Fittizio caricamento myActivity
     useEffect(() => {
         if (user) {
-            // Esempio fittizio di "myActivity"
-            // Potresti fetchare da: `/api/users/${user.id}/my-activity`
-            const fakeMyActivity: ProjectData[] = [];
-            setMyActivity(fakeMyActivity);
+            setMyActivity([]);
         } else {
             setMyActivity([]);
         }
     }, [user]);
 
-    /**
-     * Funzione fittizia per partecipare a un progetto.
-     * In un caso reale, potresti fare:
-     *   fetch(`/api/projects/${projectId}/join`, { method: "POST" }) ...
-     */
+    /** joinProject e leaveProject già esistenti... */
+
     const joinProject = (projectId: number) => {
         if (!user) return;
-
-        // Troviamo il progetto corrispondente
         const projectToJoin = projects.find((p) => p.id === projectId);
         if (!projectToJoin) return;
 
-        // 1) Incrementa i participants a livello locale
         setProjects((prev) =>
             prev.map((p) =>
                 p.id === projectId
@@ -115,10 +93,7 @@ export const ProjectsProvider: React.FC<ProjectsProviderProps> = ({
                     : p
             )
         );
-
-        // 2) Aggiungiamo il progetto a myActivity se non già presente
-        const alreadyInActivity = myActivity.some((act) => act.id === projectId);
-        if (!alreadyInActivity) {
+        if (!myActivity.some((act) => act.id === projectId)) {
             setMyActivity((prev) => [
                 ...prev,
                 { ...projectToJoin, participants: projectToJoin.participants + 1 },
@@ -126,19 +101,11 @@ export const ProjectsProvider: React.FC<ProjectsProviderProps> = ({
         }
     };
 
-    /**
-     * Nuova funzione: annulla la partecipazione (decrementa i participants e rimuove da myActivity).
-     * In un caso reale, potresti fare:
-     *   fetch(`/api/projects/${projectId}/leave`, { method: "DELETE" }) ...
-     */
     const leaveProject = (projectId: number) => {
         if (!user) return;
-
-        // Troviamo il progetto corrispondente
         const projectToLeave = projects.find((p) => p.id === projectId);
         if (!projectToLeave) return;
 
-        // 1) Decrementiamo i participants (senza andare sotto zero)
         setProjects((prev) =>
             prev.map((p) =>
                 p.id === projectId && p.participants > 0
@@ -146,9 +113,41 @@ export const ProjectsProvider: React.FC<ProjectsProviderProps> = ({
                     : p
             )
         );
-
-        // 2) Rimuoviamo il progetto da myActivity
         setMyActivity((prev) => prev.filter((p) => p.id !== projectId));
+    };
+
+    /**
+     * Aggiunge un nuovo progetto
+     * (già mostrato in esempi precedenti)
+     */
+    const addProject = (newProj: Omit<ProjectData, "id" | "participants">) => {
+        // In futuro: fetch("/api/projects", { method: "POST", body: ... })
+        const newId = Date.now();
+        const createdProject: ProjectData = {
+            id: newId,
+            author: newProj.author,
+            title: newProj.title,
+            imageUrl: newProj.imageUrl,
+            description: newProj.description,
+            participants: 0,
+        };
+        setProjects((prev) => [...prev, createdProject]);
+    };
+
+    /**
+     * updateProject: aggiorna i campi di un progetto esistente.
+     * In futuro: fetch(`/api/projects/${updated.id}`, { method: "PUT", body: ... })
+     */
+    const updateProject = (updated: ProjectData) => {
+        // Aggiorno in projects
+        setProjects((prev) =>
+            prev.map((p) => (p.id === updated.id ? updated : p))
+        );
+
+        // Se esiste in myActivity, aggiorno anche lì
+        setMyActivity((prev) =>
+            prev.map((p) => (p.id === updated.id ? updated : p))
+        );
     };
 
     return (
@@ -158,6 +157,8 @@ export const ProjectsProvider: React.FC<ProjectsProviderProps> = ({
                 myActivity,
                 joinProject,
                 leaveProject,
+                addProject,
+                updateProject,
             }}
         >
             {children}
@@ -165,5 +166,4 @@ export const ProjectsProvider: React.FC<ProjectsProviderProps> = ({
     );
 };
 
-/** Hook custom per consumare il contesto */
 export const useProjects = () => useContext(ProjectsContext);

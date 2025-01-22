@@ -103,7 +103,7 @@ const AuthButtons: React.FC = () => {
 
             {/* Form di Login */}
             {showLoginForm && (
-                <div className="absolute top-16 right-4 bg-white text-black p-4 rounded-md shadow-md">
+                <div className="absolute top-16 right-4 bg-white text-black p-4 rounded-md shadow-md z-30">
                     <h2 className="font-bold mb-2">Login</h2>
                     <form onSubmit={handleLoginSubmit}>
                         <div className="mb-2">
@@ -145,7 +145,7 @@ const AuthButtons: React.FC = () => {
 
             {/* Form di Registrazione */}
             {showSignUpForm && (
-                <div className="absolute top-16 right-4 bg-white text-black p-4 rounded-md shadow-md">
+                <div className="absolute top-16 right-4 bg-white text-black p-4 rounded-md shadow-md z-30">
                     <h2 className="font-bold mb-2">Registrati</h2>
                     <form onSubmit={handleSignUpSubmit}>
                         <div className="mb-2">

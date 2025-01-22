@@ -1,7 +1,8 @@
 // src/components/WindowsProject.tsx
-import React from "react";
+import React, { useState } from "react";
 import { ProjectData, useProjects } from "../context/ProjectsContext";
 import { useAuth } from "../context/AuthContext";
+import EditProjectModal from "./EditProjectModal";
 
 interface WindowsProjectProps {
     project: ProjectData;
@@ -9,32 +10,56 @@ interface WindowsProjectProps {
 
 const WindowsProject: React.FC<WindowsProjectProps> = ({ project }) => {
     const { user } = useAuth();
-    const { myActivity, joinProject, leaveProject } = useProjects();
+    const {
+        myActivity,
+        joinProject,
+        leaveProject,
+        updateProject,
+    } = useProjects();
 
-    // Verifichiamo se il progetto è già in myActivity
+    const [showEditModal, setShowEditModal] = useState(false);
+
+    // verifichiamo se l'utente partecipa già
     const isParticipant = myActivity.some((p) => p.id === project.id);
 
-    // Gestione click (join/leave) + eventuale fetch
-    const handleToggleParticipation = async () => {
+    const handleToggleParticipation = () => {
         if (!user) return;
-
-        try {
-            if (isParticipant) {
-                // In futuro: fetch(`/api/projects/${project.id}/leave`, { method: "DELETE" })...
-                leaveProject(project.id);
-            } else {
-                // In futuro: fetch(`/api/projects/${project.id}/join`, { method: "POST" })...
-                joinProject(project.id);
-            }
-        } catch (error) {
-            console.error(error);
+        if (isParticipant) {
+            leaveProject(project.id);
+        } else {
+            joinProject(project.id);
         }
     };
 
+    // Apertura/chiusura modale
+    const handleOpenEdit = () => {
+        setShowEditModal(true);
+    };
+    const handleCloseEdit = () => {
+        setShowEditModal(false);
+    };
+
+    // Salvataggio modifiche (riceviamo un ProjectData aggiornato)
+    const handleSaveEdit = (updated: ProjectData) => {
+        // In futuro: fetch(`/api/projects/${updated.id}`, { method: "PUT", body: JSON.stringify(updated) } )
+        updateProject(updated);
+        // Il context aggiorna i progetti. Questo componente si ridisegna con i nuovi campi.
+    };
+
     return (
-        <div className="p-4 bg-white rounded shadow-md hover:shadow-lg transition mb-4 max-w-2xl mx-auto">
+        <div className="relative p-4 bg-white rounded shadow-md hover:shadow-lg transition mb-4 w-full mx-auto">
+            {/* Bottone Modifica Progetto, in alto a destra, visibile solo se l'utente è admin
+          (oppure se preferisci l'autore, controlla user?.nickname === project.author) */}
+            {user?.role === "admin" && (
+                <button
+                    onClick={handleOpenEdit}
+                    className="absolute top-2 right-2 bg-orange-600 text-white px-2 py-1 rounded hover:bg-orange-700 transition"
+                >
+                    Modifica progetto
+                </button>
+            )}
+
             <div className="flex items-center mb-2">
-                {/* Piccola icona utente + nome autore */}
                 <svg
                     className="w-5 h-5 mr-1 text-blue-500"
                     fill="currentColor"
@@ -58,27 +83,32 @@ const WindowsProject: React.FC<WindowsProjectProps> = ({ project }) => {
             <p className="text-gray-700 mb-4">{project.description}</p>
 
             <div className="flex items-center space-x-4">
-                {/* Se l'utente è loggato, mostriamo un singolo bottone che alterna "Partecipo" / "Annulla partecipazione" */}
                 {user && (
                     <button
                         onClick={handleToggleParticipation}
                         className={`
               px-4 py-2 rounded transition text-white
               ${isParticipant
-                            ? "bg-orange-600 hover:bg-orange-700" // gestione colore bottone "partecipa" 
-                            : "bg-green-500 hover:bg-green-600"   
+                            ? "bg-orange-600 hover:bg-orange-700"
+                            : "bg-green-500 hover:bg-green-600"
                         }
             `}
                     >
                         {isParticipant ? "Annulla partecipazione" : "Partecipo"}
                     </button>
                 )}
-
-                {/* Mostriamo a tutti il numero di partecipanti */}
                 <span className="text-gray-700">
           {project.participants} partecipanti
         </span>
             </div>
+
+            {/* Modale per modificare il progetto */}
+            <EditProjectModal
+                isOpen={showEditModal}
+                onClose={handleCloseEdit}
+                project={project}
+                onSave={handleSaveEdit}
+            />
         </div>
     );
 };
