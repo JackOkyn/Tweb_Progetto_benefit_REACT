@@ -78,7 +78,7 @@ const WindowsProject: React.FC<WindowsProjectProps> = ({ project }) => {
             <img
                 src={project.imageUrl}
                 alt={project.title}
-                className="w-full h-auto mb-2 rounded"
+                className="w-full h-48 mb-2 rounded"
             />
             <p className="text-gray-700 mb-4">{project.description}</p>
 

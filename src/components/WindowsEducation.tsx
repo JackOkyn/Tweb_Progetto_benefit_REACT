@@ -90,7 +90,7 @@ const WindowsEducation: React.FC<WindowsEducationProps> = ({
             <img
                 src={post.imageUrl}
                 alt={post.title}
-                className="w-full h-auto mb-2 rounded"
+                className="w-full h-72 mb-2 rounded"
             />
 
             {/* Testo anteprima o completo */}

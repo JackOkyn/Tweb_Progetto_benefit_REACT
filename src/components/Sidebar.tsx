@@ -1,5 +1,11 @@
 import React, { useState } from "react";
-import { FaHome, FaProjectDiagram, FaTasks, FaGraduationCap } from "react-icons/fa";
+import {
+    FaHome,
+    FaProjectDiagram,
+    FaTasks,
+    FaGraduationCap,
+    FaInfoCircle
+} from "react-icons/fa";
 import { Link } from "react-router-dom";
 
 const Sidebar: React.FC = () => {
@@ -10,6 +16,7 @@ const Sidebar: React.FC = () => {
         { name: "Project", icon: <FaProjectDiagram />, path: "/project" },
         { name: "MyActivity", icon: <FaTasks />, path: "/my-activity" },
         { name: "Education", icon: <FaGraduationCap />, path: "/education" },
+        { name: "AboutUs", icon: <FaInfoCircle />, path: "/aboutus" },
     ];
 
     return (

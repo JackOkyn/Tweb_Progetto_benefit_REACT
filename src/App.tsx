@@ -14,6 +14,10 @@ import Project from "./pages/Project";
 import MyActivity from "./pages/MyActivity";
 import Education from "./pages/Education";
 
+import AboutUs from "./pages/AboutUs";
+import 'aos/dist/aos.css';
+
+
 const App: React.FC = () => {
     return (
         <AuthProvider>
@@ -29,6 +33,7 @@ const App: React.FC = () => {
                                     <Route path="/project" element={<Project />} />
                                     <Route path="/my-activity" element={<MyActivity />} />
                                     <Route path="/education" element={<Education />} />
+                                    <Route path="/aboutus" element={<AboutUs />} />
                                 </Routes>
                             </main>
                         </div>
