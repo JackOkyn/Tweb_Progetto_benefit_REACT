@@ -1,111 +1,53 @@
-import React, { useState, useEffect } from "react";
-
-interface DashboardData {
-    temperature: number;
-    co2Impact: number;
-    communityActions: number;
-}
+import React, { useState } from 'react';
+import MapComponent from '../components/MapComponent';
+import TemperatureCard from '../components/TemperatureCard';
+import CO2ImpactCard from '../components/CO2ImpactCard';
+import CommunityActionsCard from '../components/CommunityActionsCard';
 
 const Dashboard: React.FC = () => {
-    const [data, setData] = useState<DashboardData | null>(null);
+    // Stato per i dati selezionati dalla mappa
+    const [selectedData, setSelectedData] = useState<{ temperature: number; co2Impact: number; communityActions: number } | null>(null);
 
-    // Simulazione del fetch dal server
-    useEffect(() => {
-        // Simulazione dei dati ricevuti dal server
-        const fetchData = async () => {
-            // Questo verrà sostituito da una chiamata reale al server
-            const response = {
-                temperature: 12.5,
-                co2Impact: 7.8,
-                communityActions: 15,
-            };
-            setData(response);
-        };
-        fetchData(); //TODO usare chiamate asyn e promise da vedere ne per la gestione delle chiamate con typescript
-    }, []);
+    // Dati fittizi dei punti sulla mappa
+    const locations = [
+        {
+            id: 1,
+            position: [45.843862, 6.854017] as [number, number],
+            name: "Ghiacciaio Monte Bianco",
+            data: { temperature: -13.5, co2Impact: 60.4, communityActions: 75 }
+        },
+        {
+            id: 2,
+            position: [45.921256, 7.861097] as [number, number],
+            name: "Ghiacciaio Zermat",
+            data: { temperature: -20.0, co2Impact: 150.3, communityActions: 210 }
+        },
+        {
+            id: 3,
+            position: [46.837567, 10.757295] as [number, number],
+            name: "Kaunertal",
+            data: { temperature: 8.2, co2Impact: 180.8, communityActions: 20 }
+        },
+    ];
+
+    // Funzione per gestire il clic sui marker
+    const handleMarkerClick = (data: { temperature: number; co2Impact: number; communityActions: number }) => {
+        setSelectedData(data);
+    };
 
     return (
-        <div>
-            {/* Mappa */}
-            <section className="mb-6">
-                <h1 className="text-3xl font-bold mb-4">Dashboard</h1>
-                <p className="text-gray-600 mb-4">
-                    Visualizza i dati principali e lo stato delle attività della community.
-                </p>
-                <div className="h-96 bg-gray-200 rounded-lg overflow-hidden shadow-md">
-                    <img
-                        src="/src/assets/mappa.png"
-                        alt="Mappa"
-                        className="object-cover w-full h-full"
-                    />
-                </div>
-            </section>
+        <div className="dashboard-container">
+            <h1 className="text-2xl font-bold mb-4">Dashboard</h1>
 
-            {/* Griglia di card */}
-            <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
-                {/* Card Temperature */}
-                <div className="bg-white shadow-md rounded-lg p-6 hover:shadow-lg transition-shadow">
-                    <h2 className="text-lg font-semibold text-blue-700">Temperature Data</h2>
-                    <p className="text-gray-600 mt-2">
-                        Valore:{" "}
-                        <span className="text-black font-bold">
-              {data ? data.temperature.toFixed(1) : "Caricamento..."}
-            </span>
-                    </p>
-                </div>
+            {/* Mappa interattiva */}
+            <MapComponent locations={locations} onMarkerClick={handleMarkerClick} />
 
-                {/* Card CO2 Impact */}
-                <div className="bg-white shadow-md rounded-lg p-6 hover:shadow-lg transition-shadow">
-                    <h2 className="text-lg font-semibold text-green-700">CO2 Impact</h2>
-                    <p className="text-gray-600 mt-2">
-                        Valore:{" "}
-                        <span className="text-black font-bold">
-              {data ? data.co2Impact.toFixed(1) : "Caricamento..."}
-            </span>
-                    </p>
-                </div>
 
-                {/* Card Community Actions */}
-                <div className="bg-white shadow-md rounded-lg p-6 hover:shadow-lg transition-shadow">
-                    <h2 className="text-lg font-semibold text-purple-700">Community Actions</h2>
-                    <p className="text-gray-600 mt-2">
-                        Valore:{" "}
-                        <span className="text-black font-bold">
-              {data ? data.communityActions : "Caricamento..."}
-            </span>
-                    </p>
-                </div>
-            </section>
-
-            {/* Grafici */}
-            <section className="bg-white shadow-md rounded-lg p-6 mb-6">
-                <h2 className="text-xl font-semibold mb-4">Analisi dei dati</h2>
-                <p className="text-gray-600">Qui puoi aggiungere un grafico per rappresentare i dati.</p>
-                {/* Placeholder per grafico */}
-                <div className="h-48 bg-gray-200 rounded-lg flex items-center justify-center">
-                    <span className="text-gray-500">Grafico in arrivo...</span>
-                </div>
-            </section>
-
-            {/* Lista di attività recenti */}
-            <section className="bg-white shadow-md rounded-lg p-6">
-                <h2 className="text-xl font-semibold mb-4">Attività recenti</h2>
-                <ul className="space-y-4">
-                    <li className="flex items-start">
-                        <div className="h-8 w-8 bg-blue-100 rounded-full flex items-center justify-center text-blue-700 font-bold">A</div>
-                        <div className="ml-4">
-                            <p className="text-gray-800 font-medium">Hai completato un'azione nella community.</p>
-                            <p className="text-gray-500 text-sm">2 ore fa</p>
-                        </div>
-                    </li>
-                    <li className="flex items-start">
-                        <div className="h-8 w-8 bg-green-100 rounded-full flex items-center justify-center text-green-700 font-bold">B</div>
-                        <div className="ml-4">
-                            <p className="text-gray-800 font-medium">Hai aggiunto nuovi dati sulla temperatura.</p>
-                            <p className="text-gray-500 text-sm">5 ore fa</p>
-                        </div>
-                    </li>
-                </ul>
+            {/* Sezione delle card con i dati selezionati */}
+            <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
+                <TemperatureCard temperature={selectedData ? selectedData.temperature : null} />
+                <CO2ImpactCard co2Impact={selectedData ? selectedData.co2Impact : null} />
+                <CommunityActionsCard communityActions={selectedData ? selectedData.communityActions : null} />
             </section>
         </div>
     );
