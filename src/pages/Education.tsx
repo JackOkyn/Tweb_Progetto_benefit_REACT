@@ -1,12 +1,14 @@
+// src/pages/Education.tsx
 import React, { useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import WindowsEducation from "../components/WindowsEducation";
+import NewEducationModal from "../components/NewEducationModal";
 
 interface PostData {
     id: number;
     author: string;
     title: string;
-    imageUrl: string;
+    imageUrl: string;  // con file, potremmo generare un URL dopo l'upload
     snippet: string;
     likes: number;
 }
@@ -15,55 +17,74 @@ const Education: React.FC = () => {
     const { user } = useAuth();
 
     const [posts, setPosts] = useState<PostData[]>([
-        {
-            id: 1,
-            author: "Pippo Rossi",
-            title: "Panico, non nevica da 3 mesi",
-            imageUrl: "https://source.unsplash.com/random/800x600/?windows",
-            snippet:
-                "Siamo ormai al 1 di settembre ed in italia non nevica da 3 mesi, enorma crisi climatic aper il paese, nel panico gli appassionati di sci",
-            likes: 3,
-        },
-        {
-            id: 2,
-            author: "Maria Verdi",
-            title: "Ghiacciai sempre piu sottili",
-            imageUrl: "https://source.unsplash.com/random/801x601/?windows",
-            snippet:
-                "I ghiacciai, spesso definiti i “giganti silenziosi” della natura, si stanno assottigliando a un ritmo allarmante a causa del cambiamento climatico. Queste maestose riserve di ghiaccio, che per millenni hanno regolato l'equilibrio idrico e climatico del pianeta, stanno perdendo massa sotto l'effetto del riscaldamento globale. Lo scioglimento accelerato non solo minaccia ecosistemi unici, ma influisce anche sull'approvvigionamento d'acqua di milioni di persone, innalzando il livello dei mari e aumentando il rischio di eventi climatici estremi. La progressiva riduzione dei ghiacciai è un segnale evidente della crisi climatica e un monito per agire con urgenza nella salvaguardia del nostro pianeta.",
-            likes: 5,
-        },
+        // ... post iniziali ...
     ]);
 
-    /** Simuliamo la creazione di un nuovo post.
-     * In futuro qui potremmo fare una chiamata POST al server Spring:
-     * fetch("/api/posts", {method: "POST", body: ... })
+    const [showModal, setShowModal] = useState(false);
+
+    // Apri/chiudi modale
+    const openNewPostModal = () => setShowModal(true);
+    const closeNewPostModal = () => setShowModal(false);
+
+    /**
+     * In futuro: potremmo inviare "file" al server via FormData e
+     * ottenere un URL, dopodiché lo useremmo come "imageUrl".
      */
-    const handleNewPost = () => {
+    const handleCreateNewPost = (
+        title: string,
+        snippet: string,
+        file: File | null
+    ) => {
+        // LOGICA FITTIZIA
+        let fakeImageUrl =
+            "https://source.unsplash.com/random/800x600/?education";
+
+        // Se vogliamo un'anteprima locale, possiamo generare un objectURL,
+        // ma di solito lo gestiamo dopo l'upload su server.
+        if (file) {
+            // local preview: URL.createObjectURL(file)
+            // Oppure, in un caso reale, caricare il file e ottenere l'URL dal server
+            fakeImageUrl = URL.createObjectURL(file);
+        }
+
         const newPost: PostData = {
             id: Date.now(),
             author: user?.nickname || "Autore sconosciuto",
-            title: "Nuovo articolo su Windows",
-            imageUrl: "https://source.unsplash.com/random/802x602/?windows",
-            snippet:
-                "Questo è un nuovo post creato da un admin. (Dati fittizi) Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce vel libero nunc...",
+            title: title || "Nuovo articolo",
+            imageUrl: fakeImageUrl,
+            snippet: snippet || "...",
             likes: 0,
         };
+
+        // PER IL BACK-END
+        /*
+        const formData = new FormData();
+        formData.append("title", title);
+        formData.append("snippet", snippet);
+        if(file) formData.append("imageFile", file);
+
+        fetch("/api/posts", {
+          method: "POST",
+          body: formData,   // multipart/form-data
+        })
+          .then(res => res.json())
+          .then(createdPost => {
+            // createdPost avrà {id, author, title, imageUrl, snippet, ...}
+            setPosts(prev => [...prev, createdPost]);
+          })
+          .catch(err => console.error(err));
+        */
+
+        // Per ora, local
         setPosts((prev) => [...prev, newPost]);
     };
 
-    /** Simuliamo l'eliminazione di un post.
-     * In futuro qui potremmo fare una chiamata DELETE al server:
-     * fetch(`/api/posts/${id}`, { method: "DELETE" })
-     */
+    // Cancellazione post
     const handleDeletePost = (id: number) => {
         setPosts((prev) => prev.filter((p) => p.id !== id));
     };
 
-    /** Simuliamo il "Like" di un post.
-     * In futuro qui potremmo fare una chiamata PATCH/PUT/POST al server:
-     * fetch(`/api/posts/${id}/like`, {method: "POST"})
-     */
+    // Like post
     const handleLikePost = (id: number) => {
         setPosts((prev) =>
             prev.map((p) => (p.id === id ? { ...p, likes: p.likes + 1 } : p))
@@ -72,14 +93,13 @@ const Education: React.FC = () => {
 
     return (
         <div className="w-full p-6">
-            {/* Intestazione pagina */}
+            {/* Intestazione */}
             <div className="flex items-center justify-between mb-4">
-                <h1 className="text-3xl font-bold mb-6">Education</h1>
+                <h1 className="text-3xl font-bold">Education</h1>
 
-                {/* Visibile solo se ruolo = admin */}
                 {user?.role === "admin" && (
                     <button
-                        onClick={handleNewPost}
+                        onClick={openNewPostModal}
                         className="bg-green-500 hover:bg-green-600 text-white font-semibold px-4 py-2 rounded transition"
                     >
                         Nuovo post
@@ -87,17 +107,24 @@ const Education: React.FC = () => {
                 )}
             </div>
 
-            {/* Elenco di WindowsEducation incolonnati */}
+            {/* Lista di post */}
             <div className="flex flex-col space-y-6">
                 {posts.map((post) => (
                     <WindowsEducation
                         key={post.id}
                         post={post}
                         onDelete={handleDeletePost}
-                        onLike={handleLikePost} // passiamo la callback di "like"
+                        onLike={handleLikePost}
                     />
                 ))}
             </div>
+
+            {/* Modale per creare un nuovo post con file allegato */}
+            <NewEducationModal
+                isOpen={showModal && user?.role === "admin"}
+                onClose={closeNewPostModal}
+                onCreate={handleCreateNewPost}
+            />
         </div>
     );
 };
