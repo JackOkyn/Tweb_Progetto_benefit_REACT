@@ -7,14 +7,13 @@ export type UserRole = "admin" | "community";
 export interface UserData {
     nickname: string;
     email: string;
-    password: string;
     role: UserRole;
 }
 
 /** Struttura del contesto: user + metodi di login/logout. */
 interface AuthContextProps {
     user: UserData | null;
-    login: (email: string, password: string) => void;
+    login: (username: string, password: string) => void; // Cambiato email in username
     signUp: (nickname: string, email: string, password: string) => void;
     logout: () => void;
 }
@@ -33,39 +32,45 @@ const AuthContext = createContext<AuthContextProps>({
  * 2. Il provider che avvolge l’applicazione e fornisce lo stato utente.
  */
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    const [user, setUser] = useState<UserData | null>(null);
+    const [user, setUser ] = useState<UserData | null>(null);
 
-    /**
-     * Funzione di login fittizia:
-     * - Se la password è "admin", l’utente avrà ruolo admin,
-     * - Altrimenti sarà community.
-     */
-    const login = (email: string, password: string) => {
-        if (!email || !password) return;
+    const login = async (username: string, password: string) => {
+        if (!username || !password) return;
 
-        const role: UserRole = password === "admin" ? "admin" : "community";
+        try {
+            const response = await fetch("http://localhost:8080/auth/login", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ username, password }),
+            });
 
-        const fakeUser: UserData = {
-            nickname: role === "admin" ? "Mario" : "Luigi",
-            email,
-            password,
-            role,
-        };
-
-        setUser(fakeUser);
+            if (response.ok) {
+                const data = await response.json();
+                // Supponiamo che il backend restituisca nickname e ruolo
+                const loggedInUser: UserData = {
+                    nickname: data.nickname, // Assicurati che il backend restituisca il nickname
+                    email: data.email, // Se il backend restituisce l'email
+                    role: data.role, // Assicurati che il backend restituisca il ruolo
+                };
+                setUser(loggedInUser);
+            } else {
+                const errorMessage = await response.text();
+                console.error("Login failed:", errorMessage);
+                // Gestisci l'errore (ad esempio, mostra un messaggio all'utente)
+            }
+        } catch (error) {
+            console.error("Error during login:", error);
+            // Gestisci l'errore di rete
+        }
     };
 
-    /**
-     * Funzione di registrazione fittizia:
-     * - Qui potresti far scegliere un ruolo o assegnarlo di default (community).
-     * - In un’app reale, la logica del ruolo avverrebbe lato backend.
-     */
     const signUp = (nickname: string, email: string, password: string) => {
-        // Assegniamo di default il ruolo "community" all’utente registrato
+        // Logica di registrazione (puoi implementare anche questa con Fetch API)
         const fakeUser: UserData = {
             nickname,
             email,
-            password,
             role: "community",
         };
         setUser(fakeUser);

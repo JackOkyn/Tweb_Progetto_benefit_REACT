@@ -110,7 +110,8 @@ const AuthButtons: React.FC = () => {
                             <label className="block font-medium">Email</label>
                             <input
                                 type="email"
-                                className="border rounded w-full px-2 py-1"
+                                //border border-black bg-white
+                                className="border border-black bg-white rounded w-full px-2 py-1"
                                 value={loginEmail}
                                 onChange={(e) => setLoginEmail(e.target.value)}
                                 required
@@ -120,7 +121,8 @@ const AuthButtons: React.FC = () => {
                             <label className="block font-medium">Password</label>
                             <input
                                 type="password"
-                                className="border rounded w-full px-2 py-1"
+                                //insert border border-black bg-white
+                                className="border border-black bg-white rounded w-full px-2 py-1"
                                 value={loginPassword}
                                 onChange={(e) => setLoginPassword(e.target.value)}
                                 required

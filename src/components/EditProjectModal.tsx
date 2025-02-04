@@ -20,7 +20,7 @@ const EditProjectModal: React.FC<EditProjectModalProps> = ({
     const [imageUrl, setImageUrl] = useState("");
     const [description, setDescription] = useState("");
 
-    // Al montaggio (o quando project cambia), inizializziamo i campi
+    // inizializziamo i campi
     useEffect(() => {
         if (isOpen) {
             setTitle(project.title);
@@ -40,7 +40,7 @@ const EditProjectModal: React.FC<EditProjectModalProps> = ({
         };
         // Chiamiamo la callback per “salvare”
         onSave(updatedProject);
-        // Chiudiamo la modale
+        // Chiudiamo  modale
         onClose();
     };
 
