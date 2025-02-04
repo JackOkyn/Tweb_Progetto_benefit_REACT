@@ -39,16 +39,20 @@ const Dashboard: React.FC = () => {
         <div className="dashboard-container">
             <h1 className="text-2xl font-bold mb-4">Dashboard</h1>
 
-            {/* Mappa interattiva */}
-            <MapComponent locations={locations} onMarkerClick={handleMarkerClick} />
 
-
-            {/* Sezione delle card con i dati selezionati */}
-            <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
+            {/* Sezione delle 3 card  */}
+            <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-8 m-8 ">
                 <TemperatureCard temperature={selectedData ? selectedData.temperature : null} />
                 <CO2ImpactCard co2Impact={selectedData ? selectedData.co2Impact : null} />
                 <CommunityActionsCard communityActions={selectedData ? selectedData.communityActions : null} />
             </section>
+
+
+            {/* Mappa interattiva */}
+            <MapComponent locations={locations} onMarkerClick={handleMarkerClick} />
+
+
+
         </div>
     );
 };
