@@ -48,8 +48,7 @@ const WindowsProject: React.FC<WindowsProjectProps> = ({ project }) => {
 
     return (
         <div className="relative p-4 bg-white rounded shadow-md hover:shadow-lg transition mb-4 w-full mx-auto">
-            {/* Bottone Modifica Progetto, in alto a destra, visibile solo se l'utente è admin
-          (oppure se preferisci l'autore, controlla user?.nickname === project.author) */}
+            {/* Bottone Modifica Progetto, in alto a destra, visibile solo se l'utente è admin */}
             {user?.role === "admin" && (
                 <button
                     onClick={handleOpenEdit}

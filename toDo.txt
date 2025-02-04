@@ -1,9 +1,7 @@
 -
 -
 -
-
--  Implemantare  MAppa dinamica
-
+-
 - iniziare a scrivere bozza del documento di ideazione
 - Fare un check generale
 
