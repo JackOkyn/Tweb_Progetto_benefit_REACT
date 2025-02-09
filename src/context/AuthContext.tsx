@@ -4,17 +4,16 @@ import React, { createContext, useContext, useState } from "react";
 export type UserRole = "admin" | "community";
 
 /** Tipo che descrive i dati utente. */
-export interface UserData {
+export interface User {
     nickname: string;
     email: string;
-    role: UserRole;
+    role: string;
 }
 
 /** Struttura del contesto: user + metodi di login/logout. */
 interface AuthContextProps {
-    user: UserData | null;
-    login: (username: string, password: string) => void; // Cambiato email in username
-    signUp: (nickname: string, email: string, password: string) => void;
+    user: User | null;
+    login: (email: string, password: string) => Promise<void>; // Make it async
     logout: () => void;
 }
 
@@ -23,8 +22,7 @@ interface AuthContextProps {
  */
 const AuthContext = createContext<AuthContextProps>({
     user: null,
-    login: () => {},
-    signUp: () => {},
+    login: async () => {},
     logout: () => {},
 });
 
@@ -32,57 +30,48 @@ const AuthContext = createContext<AuthContextProps>({
  * 2. Il provider che avvolge l’applicazione e fornisce lo stato utente.
  */
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    const [user, setUser ] = useState<UserData | null>(null);
+    const [user, setUser ] = useState<User | null>(null);
 
-    const login = async (username: string, password: string) => {
-        if (!username || !password) return;
+    const login = async (email: string, password: string) => {
+        if (!email || !password) return;
 
         try {
             const response = await fetch("http://localhost:8080/auth/login", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
+                    "Accept": "application/json"
                 },
-                body: JSON.stringify({ username, password }),
+                body: JSON.stringify({ email, password }), // Send email and password
             });
 
             if (response.ok) {
                 const data = await response.json();
-                // Supponiamo che il backend restituisca nickname e ruolo
-                const loggedInUser: UserData = {
-                    nickname: data.nickname, // Assicurati che il backend restituisca il nickname
-                    email: data.email, // Se il backend restituisce l'email
-                    role: data.role, // Assicurati che il backend restituisca il ruolo
+                const loggedIn:User = {
+                    nickname: data.nickname,
+                    email: data.email,
+                    role: data.role,
+
                 };
-                setUser(loggedInUser);
+                setUser (loggedIn );
             } else {
                 const errorMessage = await response.text();
                 console.error("Login failed:", errorMessage);
-                // Gestisci l'errore (ad esempio, mostra un messaggio all'utente)
+                // Handle login failure (e.g., show a message to the user)
             }
         } catch (error) {
             console.error("Error during login:", error);
-            // Gestisci l'errore di rete
+            // Handle network error
         }
-    };
-
-    const signUp = (nickname: string, email: string, password: string) => {
-        // Logica di registrazione (puoi implementare anche questa con Fetch API)
-        const fakeUser: UserData = {
-            nickname,
-            email,
-            role: "community",
-        };
-        setUser(fakeUser);
     };
 
     /** Funzione di logout */
     const logout = () => {
-        setUser(null);
+        setUser (null);
     };
 
     return (
-        <AuthContext.Provider value={{ user, login, signUp, logout }}>
+        <AuthContext.Provider value={{ user, login, logout }}>
             {children}
         </AuthContext.Provider>
     );

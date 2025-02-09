@@ -7,7 +7,7 @@ import { useAuth } from "../context/AuthContext";
  */
 const AuthButtons: React.FC = () => {
     // Preleviamo user e le funzioni dal nostro AuthContext
-    const { user, login, signUp, logout } = useAuth();
+    const { user, login, logout } = useAuth(); // da aggiungere signup
 
     // Stati per controllare i form
     const [showLoginForm, setShowLoginForm] = useState(false);
@@ -30,7 +30,7 @@ const AuthButtons: React.FC = () => {
         login(loginEmail, loginPassword);
 
         // Puliamo i campi e chiudiamo il form
-        setShowLoginForm(false);
+        setShowLoginForm(true);
         setLoginEmail("");
         setLoginPassword("");
     };
@@ -38,7 +38,7 @@ const AuthButtons: React.FC = () => {
     /** Gestione submit signUp (usa la funzione del context) */
     const handleSignUpSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        signUp(signUpNickname, signUpEmail, signUpPassword);
+        //signUp(signUpNickname, signUpEmail, signUpPassword);
 
         // Puliamo i campi e chiudiamo il form
         setShowSignUpForm(false);
