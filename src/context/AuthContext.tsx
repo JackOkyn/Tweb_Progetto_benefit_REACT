@@ -4,10 +4,14 @@ import React, { createContext, useContext, useState } from "react";
 export type UserRole = "admin" | "community";
 
 /** Tipo che descrive i dati utente. */
+export interface Role {
+    name: string;
+}
 export interface User {
     nickname: string;
     email: string;
-    role: string;
+    name: string;
+    roles: Role[];
 }
 
 /** Struttura del contesto: user + metodi di login/logout. */
@@ -35,6 +39,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const login = async (email: string, password: string) => {
         if (!email || !password) return;
 
+        //fetchAPI per il login AuthController
         try {
             const response = await fetch("http://localhost:8080/auth/login", {
                 method: "POST",
@@ -50,8 +55,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 const loggedIn:User = {
                     nickname: data.nickname,
                     email: data.email,
-                    role: data.role,
-
+                    roles: data.roles||[],
+                    name: data.name,
                 };
                 setUser (loggedIn );
             } else {

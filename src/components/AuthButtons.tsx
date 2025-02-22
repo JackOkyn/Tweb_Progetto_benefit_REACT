@@ -1,59 +1,54 @@
 import React, { useState } from "react";
 import { useAuth } from "../context/AuthContext";
 
-/**
- * Component che mostra i pulsanti o i form di Login/SignUp
- * e, se l’utente è loggato, il menu a tendina con Logout.
- */
 const AuthButtons: React.FC = () => {
-    // Preleviamo user e le funzioni dal nostro AuthContext
-    const { user, login, logout } = useAuth(); // da aggiungere signup
+    const { user, login, logout } = useAuth();
+    console.log("User  data:", user);
 
-    // Stati per controllare i form
     const [showLoginForm, setShowLoginForm] = useState(false);
     const [showSignUpForm, setShowSignUpForm] = useState(false);
-
-    // Stati per aprire il menu a tendina profilo
     const [showProfileDropdown, setShowProfileDropdown] = useState(false);
 
-    // Stati per i campi dei form
     const [loginEmail, setLoginEmail] = useState("");
     const [loginPassword, setLoginPassword] = useState("");
-
     const [signUpNickname, setSignUpNickname] = useState("");
     const [signUpEmail, setSignUpEmail] = useState("");
     const [signUpPassword, setSignUpPassword] = useState("");
+    const [error, setError] = useState(""); // Stato per gestire gli errori
 
-    /** Gestione submit login (usa la funzione del context) */
-    const handleLoginSubmit = (e: React.FormEvent) => {
+    const handleLoginSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        login(loginEmail, loginPassword);
-
-        // Puliamo i campi e chiudiamo il form
-        setShowLoginForm(true);
-        setLoginEmail("");
-        setLoginPassword("");
+        setError(""); // Resetta l'errore
+        try {
+            await login(loginEmail, loginPassword);
+            setShowLoginForm(false);
+            setLoginEmail("");
+            setLoginPassword("");
+        } catch (err) {
+            setError("Login fallito. Controlla le tue credenziali."); // Gestione errore
+        }
     };
 
-    /** Gestione submit signUp (usa la funzione del context) */
-    const handleSignUpSubmit = (e: React.FormEvent) => {
+    const handleSignUpSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        //signUp(signUpNickname, signUpEmail, signUpPassword);
-
-        // Puliamo i campi e chiudiamo il form
-        setShowSignUpForm(false);
-        setSignUpNickname("");
-        setSignUpEmail("");
-        setSignUpPassword("");
+        setError(""); // Resetta l'errore
+        try {
+            // Implementa la logica di registrazione qui
+            // await signUp(signUpNickname, signUpEmail, signUpPassword);
+            setShowSignUpForm(false);
+            setSignUpNickname("");
+            setSignUpEmail("");
+            setSignUpPassword("");
+        } catch (err) {
+            setError("Registrazione fallita. Controlla i tuoi dati."); // Gestione errore
+        }
     };
 
-    /** Gestione logout */
     const handleLogout = () => {
         logout();
         setShowProfileDropdown(false);
     };
 
-    // Se l'utente è loggato, mostriamo il nickname e il menu a tendina
     if (user) {
         return (
             <div className="relative">
@@ -61,9 +56,8 @@ const AuthButtons: React.FC = () => {
                     onClick={() => setShowProfileDropdown(!showProfileDropdown)}
                     className="bg-transparent text-white font-semibold px-3 py-2 rounded-lg hover:bg-blue-800 transition"
                 >
-                    Ciao, <strong>{user.nickname}</strong> ({user.role})
+                    Ciao, <strong>{user.name}</strong> ({user.roles && user.roles.length > 0 ? user.roles.map(role => role.name).join(", ") : "Nessun ruolo"})
                 </button>
-
                 {showProfileDropdown && (
                     <div className="absolute right-0 mt-2 bg-white text-black p-2 rounded-md shadow-md">
                         <button
@@ -78,7 +72,6 @@ const AuthButtons: React.FC = () => {
         );
     }
 
-    // Altrimenti, mostriamo i pulsanti "Login" e "Register"
     return (
         <div className="flex items-center space-x-4">
             <button
@@ -105,12 +98,12 @@ const AuthButtons: React.FC = () => {
             {showLoginForm && (
                 <div className="absolute top-16 right-4 bg-white text-black p-4 rounded-md shadow-md z-30">
                     <h2 className="font-bold mb-2">Login</h2>
+                    {error && <p className="text-red-500">{error}</p>} {/* Mostra messaggio di errore */}
                     <form onSubmit={handleLoginSubmit}>
                         <div className="mb-2">
                             <label className="block font-medium">Email</label>
                             <input
                                 type="email"
-                                //border border-black bg-white
                                 className="border border-black bg-white rounded w-full px-2 py-1"
                                 value={loginEmail}
                                 onChange={(e) => setLoginEmail(e.target.value)}
@@ -121,7 +114,6 @@ const AuthButtons: React.FC = () => {
                             <label className="block font-medium">Password</label>
                             <input
                                 type="password"
-                                //insert border border-black bg-white
                                 className="border border-black bg-white rounded w-full px-2 py-1"
                                 value={loginPassword}
                                 onChange={(e) => setLoginPassword(e.target.value)}
@@ -149,6 +141,7 @@ const AuthButtons: React.FC = () => {
             {showSignUpForm && (
                 <div className="absolute top-16 right-4 bg-white text-black p-4 rounded-md shadow-md z-30">
                     <h2 className="font-bold mb-2">Registrati</h2>
+                    {error && <p className="text-red-500">{error}</p>} {/* Mostra messaggio di errore */}
                     <form onSubmit={handleSignUpSubmit}>
                         <div className="mb-2">
                             <label className="block font-medium">Nickname</label>
