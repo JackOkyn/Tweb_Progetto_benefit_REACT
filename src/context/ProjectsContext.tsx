@@ -1,4 +1,3 @@
-// src/context/ProjectsContext.tsx
 import React, {
     createContext,
     useContext,
@@ -25,7 +24,7 @@ interface ProjectsContextType {
     joinProject: (projectId: number) => void;
     leaveProject: (projectId: number) => void;
     addProject: (newProj: Omit<ProjectData, "id" | "participants">) => void;
-    updateProject: (updated: ProjectData) => void; // <-- nuova funzione
+    updateProject: (updated: ProjectData) => void; // Funzione per aggiornare un progetto
 }
 
 const ProjectsContext = createContext<ProjectsContextType>({
@@ -47,7 +46,7 @@ export const ProjectsProvider: React.FC<ProjectsProviderProps> = ({ children }) 
     const [projects, setProjects] = useState<ProjectData[]>([]);
     const [myActivity, setMyActivity] = useState<ProjectData[]>([]);
 
-    // Caricamento fittizio
+    // Caricamento fittizio dei progetti
     useEffect(() => {
         const fakeProjects: ProjectData[] = [
             {
@@ -70,19 +69,19 @@ export const ProjectsProvider: React.FC<ProjectsProviderProps> = ({ children }) 
         setProjects(fakeProjects);
     }, []);
 
-    // Fittizio caricamento myActivity
+    // Aggiornamento dell'attività dell'utente
     useEffect(() => {
         if (user) {
-            setMyActivity([]);
+            // Qui puoi caricare l'attività dell'utente da un'API se necessario
+            setMyActivity([]); // Placeholder: sostituisci con la logica reale
         } else {
             setMyActivity([]);
         }
     }, [user]);
 
-    /** joinProject e leaveProject già esistenti... */
-
+    /** Funzione per unirsi a un progetto */
     const joinProject = (projectId: number) => {
-        if (!user) return;
+        if (!user) return; // Se l'utente non è loggato, non può unirsi
         const projectToJoin = projects.find((p) => p.id === projectId);
         if (!projectToJoin) return;
 
@@ -93,6 +92,7 @@ export const ProjectsProvider: React.FC<ProjectsProviderProps> = ({ children }) 
                     : p
             )
         );
+        // Aggiungi il progetto all'attività dell'utente se non è già presente
         if (!myActivity.some((act) => act.id === projectId)) {
             setMyActivity((prev) => [
                 ...prev,
@@ -101,8 +101,9 @@ export const ProjectsProvider: React.FC<ProjectsProviderProps> = ({ children }) 
         }
     };
 
+    /** Funzione per lasciare un progetto */
     const leaveProject = (projectId: number) => {
-        if (!user) return;
+        if (!user) return; // Se l'utente non è loggato, non può lasciare
         const projectToLeave = projects.find((p) => p.id === projectId);
         if (!projectToLeave) return;
 
@@ -113,15 +114,12 @@ export const ProjectsProvider: React.FC<ProjectsProviderProps> = ({ children }) 
                     : p
             )
         );
+        // Rimuovi il progetto dall'attività dell'utente
         setMyActivity((prev) => prev.filter((p) => p.id !== projectId));
     };
 
-    /**
-     * Aggiunge un nuovo progetto
-     * (già mostrato in esempi precedenti)
-     */
-    const addProject = (newProj: Omit<ProjectData, "id" | "participants">) => {
-        // In futuro: fetch("/api/projects", { method: "POST", body: ... })
+    /** Funzione per aggiungere un nuovo progetto */
+    const addProject = (newProj: Omit<ProjectData, "id" | " participants">) => {
         const newId = Date.now();
         const createdProject: ProjectData = {
             id: newId,
@@ -134,17 +132,12 @@ export const ProjectsProvider: React.FC<ProjectsProviderProps> = ({ children }) 
         setProjects((prev) => [...prev, createdProject]);
     };
 
-    /**
-     * updateProject: aggiorna i campi di un progetto esistente.
-     * In futuro: fetch(`/api/projects/${updated.id}`, { method: "PUT", body: ... })
-     */
+    /** Funzione per aggiornare un progetto esistente */
     const updateProject = (updated: ProjectData) => {
-        // Aggiorno in projects
         setProjects((prev) =>
             prev.map((p) => (p.id === updated.id ? updated : p))
         );
 
-        // Se esiste in myActivity, aggiorno anche lì
         setMyActivity((prev) =>
             prev.map((p) => (p.id === updated.id ? updated : p))
         );

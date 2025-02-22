@@ -63,11 +63,11 @@ const Project: React.FC = () => {
         <div className="p-4 relative">
             {/* Intestazione + bottone "Nuovo Progetto" (solo admin) */}
             <div className="flex items-center justify-between mb-4">
-                <h1 className="text-xl font-bold">Lista Progetti</h1>
-                {user?.role === "admin" && (
+                <h1 className="text-xl font-bold text-black">Lista Progetti</h1>
+                {user?.roles === "admin" && (
                     <button
                         onClick={handleOpenModal}
-                        className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
+                        className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition "
                     >
                         Nuovo Progetto
                     </button>
@@ -75,7 +75,7 @@ const Project: React.FC = () => {
             </div>
 
             {/* Elenco progetti */}
-            <div className="flex flex-col w-full space-y-4">
+            <div className="flex flex-col w-full space-y-4 text-black">
                 {projects.map((proj) => (
                     <WindowsProject key={proj.id} project={proj} />
                 ))}
