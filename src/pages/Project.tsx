@@ -4,6 +4,8 @@ import { useProjects } from "../context/ProjectsContext";
 import WindowsProject from "../components/WindowsProject";
 import { useAuth } from "../context/AuthContext";
 import NewProjectModal from "../components/NewProjectModal";
+//per il like
+import { IconButton } from "@material-tailwind/react";
 
 const Project: React.FC = () => {
     const { user } = useAuth();
@@ -60,14 +62,16 @@ const Project: React.FC = () => {
     };
 
     return (
+        //add project
+
         <div className="p-4 relative">
             {/* Intestazione + bottone "Nuovo Progetto" (solo admin) */}
             <div className="flex items-center justify-between mb-4">
                 <h1 className="text-xl font-bold text-black">Lista Progetti</h1>
-                {user?.roles === "admin" && (
+                {user?.roles?.some(role => role.name === "ADMIN") && (
                     <button
                         onClick={handleOpenModal}
-                        className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition "
+                        className="bg-blue-600 text-black px-4 py-2 rounded hover:bg-blue-700 transition "
                     >
                         Nuovo Progetto
                     </button>
