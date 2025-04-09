@@ -4,18 +4,20 @@ import React, { createContext, useContext, useState } from "react";
 export type UserRole = "admin" | "community";
 
 /** Tipo che descrive i dati utente. */
-export interface UserData {
+export interface Role {
+    name: string;
+}
+export interface User {
     nickname: string;
     email: string;
-    password: string;
-    role: UserRole;
+    name: string;
+    roles: Role[];
 }
 
 /** Struttura del contesto: user + metodi di login/logout. */
 interface AuthContextProps {
-    user: UserData | null;
-    login: (email: string, password: string) => void;
-    signUp: (nickname: string, email: string, password: string) => void;
+    user: User | null;
+    login: (email: string, password: string) => Promise<void>; // Make it async
     logout: () => void;
 }
 
@@ -24,8 +26,7 @@ interface AuthContextProps {
  */
 const AuthContext = createContext<AuthContextProps>({
     user: null,
-    login: () => {},
-    signUp: () => {},
+    login: async () => {},
     logout: () => {},
 });
 
@@ -33,51 +34,49 @@ const AuthContext = createContext<AuthContextProps>({
  * 2. Il provider che avvolge l’applicazione e fornisce lo stato utente.
  */
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    const [user, setUser] = useState<UserData | null>(null);
+    const [user, setUser ] = useState<User | null>(null);
 
-    /**
-     * Funzione di login fittizia:
-     * - Se la password è "admin", l’utente avrà ruolo admin,
-     * - Altrimenti sarà community.
-     */
-    const login = (email: string, password: string) => {
+    const login = async (email: string, password: string) => {
         if (!email || !password) return;
 
-        const role: UserRole = password === "admin" ? "admin" : "community";
+        //fetchAPI per il login AuthController
+        try {
+            const response = await fetch("http://localhost:8080/auth/login", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Accept": "application/json"
+                },
+                body: JSON.stringify({ email, password }), // Send email and password
+            });
 
-        const fakeUser: UserData = {
-            nickname: role === "admin" ? "Mario" : "Luigi",
-            email,
-            password,
-            role,
-        };
-
-        setUser(fakeUser);
-    };
-
-    /**
-     * Funzione di registrazione fittizia:
-     * - Qui potresti far scegliere un ruolo o assegnarlo di default (community).
-     * - In un’app reale, la logica del ruolo avverrebbe lato backend.
-     */
-    const signUp = (nickname: string, email: string, password: string) => {
-        // Assegniamo di default il ruolo "community" all’utente registrato
-        const fakeUser: UserData = {
-            nickname,
-            email,
-            password,
-            role: "community",
-        };
-        setUser(fakeUser);
+            if (response.ok) {
+                const data = await response.json();
+                const loggedIn:User = {
+                    nickname: data.nickname,
+                    email: data.email,
+                    roles: data.roles||[],
+                    name: data.name,
+                };
+                setUser (loggedIn );
+            } else {
+                const errorMessage = await response.text();
+                console.error("Login failed:", errorMessage);
+                // Handle login failure (e.g., show a message to the user)
+            }
+        } catch (error) {
+            console.error("Error during login:", error);
+            // Handle network error
+        }
     };
 
     /** Funzione di logout */
     const logout = () => {
-        setUser(null);
+        setUser (null);
     };
 
     return (
-        <AuthContext.Provider value={{ user, login, signUp, logout }}>
+        <AuthContext.Provider value={{ user, login, logout }}>
             {children}
         </AuthContext.Provider>
     );

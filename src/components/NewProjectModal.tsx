@@ -98,7 +98,7 @@ const NewProjectModal: React.FC<NewProjectModalProps> = ({
                                 onClose();
                                 handleReset();
                             }}
-                            className="bg-gray-300 text-black px-4 py-1 rounded hover:bg-gray-400 transition"
+                            className="bg-gray-300 text-white px-4 py-1 rounded hover:bg-gray-400 transition"
                         >
                             Annulla
                         </button>

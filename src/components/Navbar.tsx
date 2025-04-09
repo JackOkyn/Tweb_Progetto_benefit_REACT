@@ -2,6 +2,7 @@
 import logo from "../assets/icon.png";
 import AuthButtons from "./AuthButtons"; // se lo hai chiamato così
 
+
 const Navbar = () => {
     return (
         <nav className="bg-blue-900 text-white flex items-center justify-between px-4 py-3 shadow-md relative">
