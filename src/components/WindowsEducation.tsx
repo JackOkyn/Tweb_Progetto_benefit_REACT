@@ -88,7 +88,7 @@ const WindowsEducation: React.FC<WindowsEducationProps> = ({
     /** Elimina un singolo commento (solo admin) */
     const handleDeleteComment = (commentId: number) => {
         // Se vuoi permettere solo all'admin di farlo:
-        if (user?.role !== "admin") return;
+        if (user?.roles !== "admin") return;
 
         // In futuro: fetch(`/api/comments/${commentId}`, { method: "DELETE" })
         setComments((prev) => prev.filter((c) => c.id !== commentId));
@@ -96,7 +96,7 @@ const WindowsEducation: React.FC<WindowsEducationProps> = ({
 
     /** Apre la modale di modifica se l'utente è admin */
     const openEditModal = () => {
-        if (user?.role === "admin") {
+        if (user?.roles === "admin") {
             setEditTitle(localPost.title);
             setEditImage(localPost.imageUrl);
             setEditSnippet(localPost.snippet);
@@ -158,7 +158,7 @@ const WindowsEducation: React.FC<WindowsEducationProps> = ({
             </button>
 
             {/* Se l'utente è admin, mostra il bottone "Modifica" */}
-            {user?.role === "admin" && (
+            {user?.roles === "admin" && (
                 <button
                     onClick={openEditModal}
                     className="absolute top-2 right-10 bg-orange-500 text-white px-2 py-1 rounded hover:bg-orange-600 transition"
@@ -200,7 +200,7 @@ const WindowsEducation: React.FC<WindowsEducationProps> = ({
                             <span>{comment.text}</span>
 
                             {/* Bottone elimina commento, visibile solo da admin */}
-                            {user?.role === "admin" && (
+                            {user?.roles === "admin" && (
                                 <button
                                     onClick={() => handleDeleteComment(comment.id)}
                                     className="absolute top-1.5 right-2 bottom-1.5 text-sm bg-red-400 text-white p-1 rounded hover:bg-red-500"
@@ -235,7 +235,7 @@ const WindowsEducation: React.FC<WindowsEducationProps> = ({
             </div>
 
             {/* Modale di modifica post  */}
-            {showEditModal && user?.role === "admin" && (
+            {showEditModal && user?.roles === "admin" && (
                 <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
                     <div className="bg-white p-6 rounded shadow-md max-w-md w-full relative">
                         <h2 className="text-xl font-bold mb-4">Modifica Post</h2>

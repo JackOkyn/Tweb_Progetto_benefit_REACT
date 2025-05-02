@@ -97,7 +97,7 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ articleId }) => {
                         <span>{comment.text}</span>
 
                         {/* Bottone rosso "elimina" SOLO se user?.role === "admin" */}
-                        {user?.role === "admin" && (
+                        {user?.roles === "admin" && (
                             <button
                                 onClick={() => handleDeleteComment(comment.id)}
                                 className="absolute top-2 right-2 bottom-2 bg-red-500 text-white text-xs text-center p-1 rounded hover:bg-red-600 transition"

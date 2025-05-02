@@ -1,23 +1,15 @@
 // src/pages/Education.tsx
 import React, { useState } from "react";
 import { useAuth } from "../context/AuthContext";
-import WindowsEducation from "../components/WindowsEducation";
-import NewEducationModal from "../components/NewEducationModal";
+import {getFetchApi} from "../service/genericServices.ts";
 
-interface PostData {
-    id: number;
-    author: string;
-    title: string;
-    imageUrl: string;  // con file, potremmo generare un URL dopo l'upload
-    snippet: string;
-    likes: number;
-}
 
 const Education: React.FC = () => {
     const { user } = useAuth();
-
+    const Education_URL = 'https://api.miosito.com/users';
+    //get method
     const [posts, setPosts] = useState<PostData[]>([
-        // ... post iniziali ...
+
     ]);
 
     const [showModal, setShowModal] = useState(false);
