@@ -1,18 +1,17 @@
-
-//GET METHOD
 export async function getFetchApi<T>(url: string): Promise<T> {
+    const token = localStorage.getItem("jwtToken");
+
     const response = await fetch(url, {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',
-        },
+            ...(token && { 'Authorization': `Bearer ${token}` }) // 👈 aggiunge token solo se presente
+        }
     });
 
     if (!response.ok) {
-        // Se non è 200-299
         throw new Error(`Errore API: ${response.status} ${response.statusText}`);
     }
 
-    const data = await response.json();
-    return data as T;
+    return await response.json();
 }

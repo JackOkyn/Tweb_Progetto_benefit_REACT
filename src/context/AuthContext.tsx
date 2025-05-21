@@ -52,13 +52,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
             if (response.ok) {
                 const data = await response.json();
-                const loggedIn:User = {
+                //salvo il token
+                localStorage.setItem("jwtToken", data.token);
+                const loggedIn: User = {
                     nickname: data.nickname,
                     email: data.email,
-                    roles: data.roles||[],
+                    roles: data.roles || [],
                     name: data.name,
                 };
-                setUser (loggedIn );
+                setUser(loggedIn);
             } else {
                 const errorMessage = await response.text();
                 console.error("Login failed:", errorMessage);
@@ -72,6 +74,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     /** Funzione di logout */
     const logout = () => {
+        //rimuovo il token una volta che ho eseguito il logout
+        localStorage.removeItem("jwtToken");
         setUser (null);
     };
 
