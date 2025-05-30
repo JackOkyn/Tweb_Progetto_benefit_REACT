@@ -8,9 +8,9 @@ export interface Role {
     name: string;
 }
 export interface User {
-    nickname: string;
+    username: string;
     email: string;
-    name: string;
+    name?: string;
     roles: Role[];
 }
 
@@ -47,15 +47,28 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                     "Content-Type": "application/json",
                     "Accept": "application/json"
                 },
-                body: JSON.stringify({ email, password }), // Send email and password
+                body: JSON.stringify({ id: 0,
+                    username: "",
+                    email: email,
+                    password: password,
+                    roles: [],
+                    projects: []}), // Send email and password
             });
 
             if (response.ok) {
                 const data = await response.json();
                 //salvo il token
                 localStorage.setItem("jwtToken", data.token);
+                console.log("🟢 Login data:", data); // <-- DEBUG!
+
+                // CHECK: contiene un token?
+                if (data.token) {
+                    localStorage.setItem("jwtToken", data.token); // 👈 SALVA IL TOKEN
+                } else {
+                    console.warn("⚠️ Nessun token trovato nella risposta!");
+                }
                 const loggedIn: User = {
-                    nickname: data.nickname,
+                    username: data.username,
                     email: data.email,
                     roles: data.roles || [],
                     name: data.name,

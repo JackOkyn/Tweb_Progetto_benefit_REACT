@@ -5,7 +5,7 @@ export async function getFetchApi<T>(url: string): Promise<T> {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',
-            ...(token && { 'Authorization': `Bearer ${token}` }) // 👈 aggiunge token solo se presente
+            ...(token && { 'Authorization': `Bearer ${token}` })
         }
     });
 

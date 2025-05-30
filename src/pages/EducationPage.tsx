@@ -16,17 +16,19 @@ const EducationPage: React.FC = () => {
     useEffect(() => {
         async function loadEducations() {
             try {
+                console.log("🔍 JWT token da localStorage:", localStorage.getItem("jwtToken"));
                 const data = await getFetchApi<Education[]>(Education_URL);
                 setPosts(data);
-            } catch (err) {
+            }
+            catch (err) {
                 if (err instanceof Error) {
                     setError(err.message);
                 }
-            } finally {
+            }
+            finally {
                 setLoading(false);
             }
         }
-
         loadEducations();
     }, []);
 
