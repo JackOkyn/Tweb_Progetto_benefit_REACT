@@ -1,8 +1,8 @@
 // src/pages/EducationPage.tsx
 import React, { useState, useEffect } from 'react';
 import { useAuth } from "../context/AuthContext";
-import {getFetchApi} from "../service/genericServices.ts";
-import {Education} from "../types/Education.ts";
+import {getFetchApi} from "../service/genericServices";
+import {Education} from "../types/Education";
 
 
 const EducationPage: React.FC = () => {

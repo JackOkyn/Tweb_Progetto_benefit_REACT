@@ -57,16 +57,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
             if (response.ok) {
                 const data = await response.json();
-                //salvo il token
-                localStorage.setItem("jwtToken", data.token);
-                console.log("🟢 Login data:", data); // <-- DEBUG!
+                console.log("🟢 Login data:", data);
 
-                // CHECK: contiene un token?
                 if (data.token) {
-                    localStorage.setItem("jwtToken", data.token); // 👈 SALVA IL TOKEN
+                    localStorage.setItem("jwtToken", data.token);
                 } else {
                     console.warn("⚠️ Nessun token trovato nella risposta!");
                 }
+                
                 const loggedIn: User = {
                     username: data.username,
                     email: data.email,
