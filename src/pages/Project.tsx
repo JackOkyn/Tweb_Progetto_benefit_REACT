@@ -9,16 +9,27 @@ import { ConservationProject } from "../types/ConservationProject";
 const Project: React.FC = () => {
     const { user } = useAuth();
     const { projects, addProject } = useProjects();
-    
+
     // Stati per gestire i dati dall'API
     const [conservationProjects, setConservationProjects] = useState<ConservationProject[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    
+
     // Stato per la modale
     const [showModal, setShowModal] = useState(false);
     const [showConservationModal, setShowConservationModal] = useState(false);
     const [currentProject, setCurrentProject] = useState<Partial<ConservationProject>>({});
+
+    // Mock user IDs - in un'app reale, questi verrebbero dal backend
+    const getUserId = (nickname: string): number => {
+        // Simulazione mapping nickname -> userId
+        const userMapping: { [key: string]: number } = {
+            'Mario': 1,
+            'Luigi': 2,
+            'Admin': 1
+        };
+        return userMapping[nickname] || 1;
+    };
 
     // Carica i progetti dall'API
     useEffect(() => {
@@ -34,7 +45,14 @@ const Project: React.FC = () => {
         try {
             setLoading(true);
             const data = await projectService.getAll();
-            setConservationProjects(data);
+
+            // Normalizza i dati assicurandoti che ogni progetto abbia il campo users
+            const normalizedData = data.map(project => ({
+                ...project,
+                users: project.users || [] // Aggiungi array vuoto se users è undefined
+            }));
+
+            setConservationProjects(normalizedData);
             setError(null);
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Errore nel caricamento');
@@ -46,10 +64,17 @@ const Project: React.FC = () => {
     const handleCreateConservationProject = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
+            const projectData: Partial<ConservationProject> = {
+                name: currentProject.name,
+                description: currentProject.description,
+                users: currentProject.users || [],
+                author: user?.nickname
+            };
+
             if (currentProject.id) {
-                await projectService.update(currentProject.id, currentProject);
+                await projectService.update(currentProject.id, projectData);
             } else {
-                await projectService.create(currentProject);
+                await projectService.create(projectData);
             }
             setShowConservationModal(false);
             setCurrentProject({});
@@ -70,6 +95,30 @@ const Project: React.FC = () => {
         }
     };
 
+    const handleJoinProject = async (projectId: number) => {
+        if (!user) return;
+
+        try {
+            const userId = getUserId(user.nickname);
+            await projectService.addParticipant(projectId, userId);
+            await loadConservationProjects();
+        } catch (err) {
+            setError(err instanceof Error ? err.message : 'Errore nell\'adesione');
+        }
+    };
+
+    const handleLeaveProject = async (projectId: number) => {
+        if (!user) return;
+
+        try {
+            const userId = getUserId(user.nickname);
+            await projectService.removeParticipant(projectId, userId);
+            await loadConservationProjects();
+        } catch (err) {
+            setError(err instanceof Error ? err.message : 'Errore nell\'uscita dal progetto');
+        }
+    };
+
     const handleCreateProject = (title: string, image: string, desc: string) => {
         if (!user) return;
         addProject({
@@ -80,6 +129,25 @@ const Project: React.FC = () => {
         });
     };
 
+    const isUserParticipant = (project: ConservationProject): boolean => {
+        if (!user || !project.users) return false;
+        return project.users.some(u => u.name === user.nickname);
+    };
+
+    const canUserEditProject = (project: ConservationProject): boolean => {
+        if (!user) return false;
+
+        if (user.role === "admin") {
+            return !project.author || project.author === user.nickname;
+        }
+
+        return false;
+    };
+
+    const isAdmin = (): boolean => {
+        return user?.role === "admin";
+    };
+
     if (loading) return <div className="p-4">Caricamento progetti...</div>;
 
     return (
@@ -87,17 +155,19 @@ const Project: React.FC = () => {
             {/* Header */}
             <div className="flex items-center justify-between mb-6">
                 <h1 className="text-2xl font-bold text-black">Gestione Progetti</h1>
-                {user?.role === "admin" && (
+                {user && (
                     <div className="space-x-2">
-                        <button
-                            onClick={() => {
-                                setCurrentProject({});
-                                setShowConservationModal(true);
-                            }}
-                            className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition"
-                        >
-                            Nuovo Progetto Conservazione
-                        </button>
+                        {isAdmin() && (
+                            <button
+                                onClick={() => {
+                                    setCurrentProject({});
+                                    setShowConservationModal(true);
+                                }}
+                                className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition"
+                            >
+                                Nuovo Progetto Conservazione
+                            </button>
+                        )}
                         <button
                             onClick={() => setShowModal(true)}
                             className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
@@ -118,38 +188,74 @@ const Project: React.FC = () => {
             <div className="mb-8">
                 <h2 className="text-xl font-semibold mb-4 text-black">Progetti di Conservazione</h2>
                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                    {conservationProjects.map((project) => (
-                        <div key={project.id} className="border p-4 rounded shadow bg-white">
-                            <h3 className="text-lg font-semibold text-black mb-2">{project.title}</h3>
-                            <p className="text-gray-700 mb-2">{project.description}</p>
-                            <div className="text-sm text-gray-600 mb-2">
-                                <p>Inizio: {new Date(project.startDate).toLocaleDateString()}</p>
-                                <p>Fine: {new Date(project.endDate).toLocaleDateString()}</p>
-                                <p>Status: <span className="font-medium">{project.status}</span></p>
-                                <p>Partecipanti: {project.participants.length}</p>
-                            </div>
-                            
-                            {user?.role === "admin" && (
-                                <div className="mt-4 space-x-2">
-                                    <button
-                                        onClick={() => {
-                                            setCurrentProject(project);
-                                            setShowConservationModal(true);
-                                        }}
-                                        className="bg-yellow-500 text-white px-3 py-1 rounded text-sm"
-                                    >
-                                        Modifica
-                                    </button>
-                                    <button
-                                        onClick={() => handleDeleteProject(project.id)}
-                                        className="bg-red-500 text-white px-3 py-1 rounded text-sm"
-                                    >
-                                        Elimina
-                                    </button>
+                    {conservationProjects.map((project) => {
+                        const canEdit = canUserEditProject(project);
+                        const isParticipant = isUserParticipant(project);
+                        const projectUsers = project.users || []; // Fallback sicuro
+
+                        return (
+                            <div key={project.id} className="border p-4 rounded shadow bg-white">
+                                <div className="flex justify-between items-start mb-2">
+                                    <h3 className="text-lg font-semibold text-black">{project.name}</h3>
+                                    <span className="text-xs bg-gray-200 px-2 py-1 rounded">
+                                        {project.author ? `by ${project.author}` : 'Sistema'}
+                                    </span>
                                 </div>
-                            )}
-                        </div>
-                    ))}
+                                <p className="text-gray-700 mb-2">{project.description}</p>
+                                <div className="text-sm text-gray-600 mb-3">
+                                    <p>Partecipanti: {projectUsers.length}</p>
+                                    {projectUsers.length > 0 && (
+                                        <p className="text-xs mt-1">
+                                            {projectUsers.map(u => u.name).join(', ')}
+                                        </p>
+                                    )}
+                                </div>
+
+                                {/* Azioni disponibili per l'utente */}
+                                {user && (
+                                    <div className="mt-4 space-y-2">
+                                        {/* Partecipazione al progetto */}
+                                        {!isParticipant ? (
+                                            <button
+                                                onClick={() => handleJoinProject(project.id)}
+                                                className="w-full bg-blue-500 text-white px-3 py-2 rounded text-sm hover:bg-blue-600"
+                                            >
+                                                Partecipa
+                                            </button>
+                                        ) : (
+                                            <button
+                                                onClick={() => handleLeaveProject(project.id)}
+                                                className="w-full bg-orange-500 text-white px-3 py-2 rounded text-sm hover:bg-orange-600"
+                                            >
+                                                Abbandona Progetto
+                                            </button>
+                                        )}
+
+                                        {/* Azioni admin */}
+                                        {canEdit && (
+                                            <div className="flex space-x-2">
+                                                <button
+                                                    onClick={() => {
+                                                        setCurrentProject(project);
+                                                        setShowConservationModal(true);
+                                                    }}
+                                                    className="flex-1 bg-yellow-500 text-white px-3 py-1 rounded text-sm hover:bg-yellow-600"
+                                                >
+                                                    Modifica
+                                                </button>
+                                                <button
+                                                    onClick={() => handleDeleteProject(project.id)}
+                                                    className="flex-1 bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-600"
+                                                >
+                                                    Elimina
+                                                </button>
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+                            </div>
+                        );
+                    })}
                 </div>
             </div>
 
@@ -172,13 +278,13 @@ const Project: React.FC = () => {
                         </h2>
                         <form onSubmit={handleCreateConservationProject}>
                             <div className="mb-4">
-                                <label className="block mb-2 font-medium">Titolo</label>
+                                <label className="block mb-2 font-medium">Nome Progetto</label>
                                 <input
                                     type="text"
-                                    value={currentProject.title || ''}
+                                    value={currentProject.name || ''}
                                     onChange={(e) => setCurrentProject({
                                         ...currentProject,
-                                        title: e.target.value
+                                        name: e.target.value
                                     })}
                                     className="w-full border p-2 rounded"
                                     required
@@ -195,50 +301,6 @@ const Project: React.FC = () => {
                                     className="w-full border p-2 rounded h-24"
                                     required
                                 />
-                            </div>
-                            <div className="mb-4">
-                                <label className="block mb-2 font-medium">Data Inizio</label>
-                                <input
-                                    type="date"
-                                    value={currentProject.startDate || ''}
-                                    onChange={(e) => setCurrentProject({
-                                        ...currentProject,
-                                        startDate: e.target.value
-                                    })}
-                                    className="w-full border p-2 rounded"
-                                    required
-                                />
-                            </div>
-                            <div className="mb-4">
-                                <label className="block mb-2 font-medium">Data Fine</label>
-                                <input
-                                    type="date"
-                                    value={currentProject.endDate || ''}
-                                    onChange={(e) => setCurrentProject({
-                                        ...currentProject,
-                                        endDate: e.target.value
-                                    })}
-                                    className="w-full border p-2 rounded"
-                                    required
-                                />
-                            </div>
-                            <div className="mb-4">
-                                <label className="block mb-2 font-medium">Status</label>
-                                <select
-                                    value={currentProject.status || ''}
-                                    onChange={(e) => setCurrentProject({
-                                        ...currentProject,
-                                        status: e.target.value
-                                    })}
-                                    className="w-full border p-2 rounded"
-                                    required
-                                >
-                                    <option value="">Seleziona status</option>
-                                    <option value="PIANIFICATO">Pianificato</option>
-                                    <option value="IN_CORSO">In Corso</option>
-                                    <option value="COMPLETATO">Completato</option>
-                                    <option value="SOSPESO">Sospeso</option>
-                                </select>
                             </div>
                             <div className="flex justify-end space-x-2">
                                 <button
