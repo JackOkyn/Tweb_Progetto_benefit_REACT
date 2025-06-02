@@ -1,34 +1,31 @@
-import {Education} from "../models/models.tsx";
+import { Education } from '../types/Education';
 
 const EDUCATION_API = 'http://localhost:8080/educations';
 
-const defaultHeaders = {
-    'Content-Type': 'application/json',
-    'Accept': 'application/json',
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type, Authorization'
-};
-
 export const educationService = {
     getAll: async (): Promise<Education[]> => {
-        const response = await fetch(EDUCATION_API, {
-            method: 'GET',
-            headers: defaultHeaders,
-            credentials: 'include' // Per supportare i cookies se necessario
-        });
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+        try {
+            const response = await fetch(EDUCATION_API, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            });
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
+            const data = await response.json();
+            return data;
+        } catch (error) {
+            console.error('Errore nel fetch delle educazioni:', error);
+            throw error;
         }
-        return await response.json();
     },
 
     getById: async (id: number): Promise<Education> => {
-        const response = await fetch(`${EDUCATION_API}/${id}`, {
-            method: 'GET',
-            headers: defaultHeaders,
-            credentials: 'include'
-        });
+        const response = await fetch(`${EDUCATION_API}/${id}`);
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
@@ -38,8 +35,7 @@ export const educationService = {
     create: async (education: Partial<Education>): Promise<Education> => {
         const response = await fetch(EDUCATION_API, {
             method: 'POST',
-            headers: defaultHeaders,
-            credentials: 'include',
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(education)
         });
         if (!response.ok) {
@@ -51,8 +47,7 @@ export const educationService = {
     update: async (id: number, education: Partial<Education>): Promise<Education> => {
         const response = await fetch(`${EDUCATION_API}/${id}`, {
             method: 'PUT',
-            headers: defaultHeaders,
-            credentials: 'include',
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(education)
         });
         if (!response.ok) {
@@ -63,9 +58,7 @@ export const educationService = {
 
     delete: async (id: number): Promise<void> => {
         const response = await fetch(`${EDUCATION_API}/${id}`, {
-            method: 'DELETE',
-            headers: defaultHeaders,
-            credentials: 'include'
+            method: 'DELETE'
         });
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
