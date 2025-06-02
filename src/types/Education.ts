@@ -1,9 +1,9 @@
-import { User } from './User';
 import { CommentEducation } from './CommentEducation';
+import {EducationUser} from "./EducationUser.tsx";
 
 export interface Education {
     id: number;
-    user: User;
+    user: EducationUser;
     titleEducation: string;
     commentEducation: CommentEducation[]; // Lista di commenti
     likesEducation: number;
