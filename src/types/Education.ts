@@ -1,5 +1,5 @@
 import { CommentEducation } from './CommentEducation';
-import {EducationUser} from "./EducationUser.tsx";
+import {EducationUser} from "./EducationUser.ts";
 
 export interface Education {
     id: number;
