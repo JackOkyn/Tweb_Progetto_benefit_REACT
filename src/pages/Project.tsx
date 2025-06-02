@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { useProjects } from "../context/ProjectsContext";
-import WindowsProject from "../components/WindowsProject";
 import { useAuth } from "../context/AuthContext";
 import NewProjectModal from "../components/NewProjectModal";
 import { projectService } from "../service/projectServices";
@@ -8,21 +7,28 @@ import { ConservationProject } from "../types/ConservationProject";
 
 const Project: React.FC = () => {
     const { user } = useAuth();
-    const { projects, addProject } = useProjects();
+    const { addProject } = useProjects();
 
     // Stati per gestire i dati dall'API
     const [conservationProjects, setConservationProjects] = useState<ConservationProject[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [success, setSuccess] = useState<string | null>(null);
+
+    // Stati per la ricerca
+    const [searchTerm, setSearchTerm] = useState('');
+    const [searchById, setSearchById] = useState('');
+    const [searchResults, setSearchResults] = useState<ConservationProject[]>([]);
+    const [isSearching, setIsSearching] = useState(false);
 
     // Stato per la modale
     const [showModal, setShowModal] = useState(false);
     const [showConservationModal, setShowConservationModal] = useState(false);
     const [currentProject, setCurrentProject] = useState<Partial<ConservationProject>>({});
+    const [isEditing, setIsEditing] = useState(false);
 
     // Mock user IDs - in un'app reale, questi verrebbero dal backend
     const getUserId = (nickname: string): number => {
-        // Simulazione mapping nickname -> userId
         const userMapping: { [key: string]: number } = {
             'Mario': 1,
             'Luigi': 2,
@@ -41,6 +47,7 @@ const Project: React.FC = () => {
         });
     }, []);
 
+
     const loadConservationProjects = async () => {
         try {
             setLoading(true);
@@ -49,7 +56,7 @@ const Project: React.FC = () => {
             // Normalizza i dati assicurandoti che ogni progetto abbia il campo users
             const normalizedData = data.map(project => ({
                 ...project,
-                users: project.users || [] // Aggiungi array vuoto se users è undefined
+                users: project.users || []
             }));
 
             setConservationProjects(normalizedData);
@@ -59,6 +66,35 @@ const Project: React.FC = () => {
         } finally {
             setLoading(false);
         }
+    };
+    const searchProjectById = async () => {
+        if (!searchById.trim()) return;
+
+        const id = parseInt(searchById);
+        if (isNaN(id)) {
+            setError('ID progetto non valido');
+            return;
+        }
+
+        try {
+            setIsSearching(true);
+            const project = await projectService.getById(id);
+            setSearchResults([project]);
+            setSuccess(`Progetto trovato: ${project.name}`);
+            setTimeout(() => setSuccess(null), 3000);
+        } catch (err) {
+            setError(err instanceof Error ? err.message : 'Progetto non trovato');
+            setSearchResults([]);
+        } finally {
+            setIsSearching(false);
+        }
+    };
+
+    const clearSearch = () => {
+        setSearchTerm('');
+        setSearchById('');
+        setSearchResults([]);
+        setIsSearching(false);
     };
 
     const handleCreateConservationProject = async (e: React.FormEvent) => {
@@ -71,24 +107,39 @@ const Project: React.FC = () => {
                 author: user?.nickname
             };
 
-            if (currentProject.id) {
+            if (isEditing && currentProject.id) {
                 await projectService.update(currentProject.id, projectData);
+                setSuccess('Progetto aggiornato con successo!');
             } else {
                 await projectService.create(projectData);
+                setSuccess('Progetto creato con successo!');
             }
+
             setShowConservationModal(false);
             setCurrentProject({});
+            setIsEditing(false);
             await loadConservationProjects();
+            setTimeout(() => setSuccess(null), 3000);
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Errore nel salvataggio');
         }
     };
 
-    const handleDeleteProject = async (id: number) => {
-        if (window.confirm('Sei sicuro di voler eliminare questo progetto?')) {
+    const handleEditProject = (project: ConservationProject) => {
+        setCurrentProject(project);
+        setIsEditing(true);
+        setShowConservationModal(true);
+    };
+
+    const handleDeleteProject = async (id: number, projectName: string) => {
+        if (window.confirm(`Sei sicuro di voler eliminare il progetto "${projectName}"?`)) {
             try {
                 await projectService.delete(id);
+                setSuccess('Progetto eliminato con successo!');
                 await loadConservationProjects();
+                // Rimuovi anche dai risultati di ricerca se presente
+                setSearchResults(prev => prev.filter(p => p.id !== id));
+                setTimeout(() => setSuccess(null), 3000);
             } catch (err) {
                 setError(err instanceof Error ? err.message : 'Errore nell\'eliminazione');
             }
@@ -101,7 +152,9 @@ const Project: React.FC = () => {
         try {
             const userId = getUserId(user.nickname);
             await projectService.addParticipant(projectId, userId);
+            setSuccess('Ti sei unito al progetto con successo!');
             await loadConservationProjects();
+            setTimeout(() => setSuccess(null), 3000);
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Errore nell\'adesione');
         }
@@ -113,7 +166,9 @@ const Project: React.FC = () => {
         try {
             const userId = getUserId(user.nickname);
             await projectService.removeParticipant(projectId, userId);
+            setSuccess('Hai lasciato il progetto');
             await loadConservationProjects();
+            setTimeout(() => setSuccess(null), 3000);
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Errore nell\'uscita dal progetto');
         }
@@ -148,7 +203,23 @@ const Project: React.FC = () => {
         return user?.role === "admin";
     };
 
+    const closeModal = () => {
+        setShowConservationModal(false);
+        setCurrentProject({});
+        setIsEditing(false);
+    };
+
+    // Nascondi messaggi di errore dopo 5 secondi
+    useEffect(() => {
+        if (error) {
+            const timer = setTimeout(() => setError(null), 5000);
+            return () => clearTimeout(timer);
+        }
+    }, [error]);
+
     if (loading) return <div className="p-4">Caricamento progetti...</div>;
+
+    const displayProjects = searchResults.length > 0 || isSearching ? searchResults : conservationProjects;
 
     return (
         <div className="p-4 relative">
@@ -161,6 +232,7 @@ const Project: React.FC = () => {
                             <button
                                 onClick={() => {
                                     setCurrentProject({});
+                                    setIsEditing(false);
                                     setShowConservationModal(true);
                                 }}
                                 className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition"
@@ -178,6 +250,63 @@ const Project: React.FC = () => {
                 )}
             </div>
 
+            {/* Barra di ricerca */}
+            <div className="mb-6 bg-gray-50 p-4 rounded-lg">
+                <h3 className="text-lg font-semibold mb-3">Cerca Progetti</h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    {/* Ricerca per ID */}
+                    <div>
+                        <label className="block text-sm font-medium mb-1">Cerca per ID</label>
+                        <div className="flex">
+                            <input
+                                type="number"
+                                value={searchById}
+                                onChange={(e) => setSearchById(e.target.value)}
+                                placeholder="ID progetto..."
+                                className="flex-1 border border-gray-300 rounded-l px-3 py-2"
+                            />
+                            <button
+                                onClick={searchProjectById}
+                                disabled={isSearching}
+                                className="bg-blue-500 text-white px-3 py-2 rounded-r hover:bg-blue-600 disabled:opacity-50"
+                            >
+                                Cerca
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Pulsante reset */}
+                    <div className="flex items-end">
+                        <button
+                            onClick={clearSearch}
+                            className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600 transition"
+                        >
+                            Mostra Tutti
+                        </button>
+                    </div>
+                </div>
+
+                {/* Indicatore ricerca */}
+                {isSearching && (
+                    <div className="mt-2 text-blue-600">
+                        Ricerca in corso...
+                    </div>
+                )}
+
+                {searchResults.length > 0 && (
+                    <div className="mt-2 text-green-600">
+                        Trovati {searchResults.length} risultati
+                    </div>
+                )}
+            </div>
+
+            {/* Messaggi di successo/errore */}
+            {success && (
+                <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
+                    {success}
+                </div>
+            )}
+
             {error && (
                 <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
                     {error}
@@ -186,20 +315,27 @@ const Project: React.FC = () => {
 
             {/* Progetti di Conservazione */}
             <div className="mb-8">
-                <h2 className="text-xl font-semibold mb-4 text-black">Progetti di Conservazione</h2>
+                <h2 className="text-xl font-semibold mb-4 text-black">
+                    {searchResults.length > 0 ? 'Risultati Ricerca' : 'Progetti di Conservazione'}
+                </h2>
                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                    {conservationProjects.map((project) => {
+                    {displayProjects.map((project) => {
                         const canEdit = canUserEditProject(project);
                         const isParticipant = isUserParticipant(project);
-                        const projectUsers = project.users || []; // Fallback sicuro
+                        const projectUsers = project.users || [];
 
                         return (
                             <div key={project.id} className="border p-4 rounded shadow bg-white">
                                 <div className="flex justify-between items-start mb-2">
                                     <h3 className="text-lg font-semibold text-black">{project.name}</h3>
-                                    <span className="text-xs bg-gray-200 px-2 py-1 rounded">
-                                        {project.author ? `by ${project.author}` : 'Sistema'}
-                                    </span>
+                                    <div className="flex flex-col items-end">
+                                        <span className="text-xs bg-gray-200 px-2 py-1 rounded mb-1">
+                                            ID: {project.id}
+                                        </span>
+                                        <span className="text-xs bg-gray-200 px-2 py-1 rounded">
+                                            {project.author ? `by ${project.author}` : 'Sistema'}
+                                        </span>
+                                    </div>
                                 </div>
                                 <p className="text-gray-700 mb-2">{project.description}</p>
                                 <div className="text-sm text-gray-600 mb-3">
@@ -235,16 +371,13 @@ const Project: React.FC = () => {
                                         {canEdit && (
                                             <div className="flex space-x-2">
                                                 <button
-                                                    onClick={() => {
-                                                        setCurrentProject(project);
-                                                        setShowConservationModal(true);
-                                                    }}
+                                                    onClick={() => handleEditProject(project)}
                                                     className="flex-1 bg-yellow-500 text-white px-3 py-1 rounded text-sm hover:bg-yellow-600"
                                                 >
                                                     Modifica
                                                 </button>
                                                 <button
-                                                    onClick={() => handleDeleteProject(project.id)}
+                                                    onClick={() => handleDeleteProject(project.id, project.name)}
                                                     className="flex-1 bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-600"
                                                 >
                                                     Elimina
@@ -257,16 +390,12 @@ const Project: React.FC = () => {
                         );
                     })}
                 </div>
-            </div>
 
-            {/* Altri Progetti */}
-            <div>
-                <h2 className="text-xl font-semibold mb-4 text-black">Altri Progetti</h2>
-                <div className="flex flex-col w-full space-y-4 text-black">
-                    {projects.map((proj) => (
-                        <WindowsProject key={proj.id} project={proj} />
-                    ))}
-                </div>
+                {displayProjects.length === 0 && !loading && (
+                    <div className="text-center text-gray-500 py-8">
+                        {searchTerm || searchById ? 'Nessun progetto trovato' : 'Nessun progetto disponibile'}
+                    </div>
+                )}
             </div>
 
             {/* Modale per progetti di conservazione */}
@@ -274,7 +403,7 @@ const Project: React.FC = () => {
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
                     <div className="bg-white p-6 rounded-lg w-96 max-h-[90vh] overflow-y-auto">
                         <h2 className="text-xl font-bold mb-4">
-                            {currentProject.id ? 'Modifica' : 'Nuovo'} Progetto di Conservazione
+                            {isEditing ? 'Modifica' : 'Nuovo'} Progetto di Conservazione
                         </h2>
                         <form onSubmit={handleCreateConservationProject}>
                             <div className="mb-4">
@@ -305,19 +434,16 @@ const Project: React.FC = () => {
                             <div className="flex justify-end space-x-2">
                                 <button
                                     type="button"
-                                    onClick={() => {
-                                        setShowConservationModal(false);
-                                        setCurrentProject({});
-                                    }}
-                                    className="bg-gray-500 text-white px-4 py-2 rounded"
+                                    onClick={closeModal}
+                                    className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
                                 >
                                     Annulla
                                 </button>
                                 <button
                                     type="submit"
-                                    className="bg-green-600 text-white px-4 py-2 rounded"
+                                    className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
                                 >
-                                    Salva
+                                    {isEditing ? 'Aggiorna' : 'Crea'}
                                 </button>
                             </div>
                         </form>
