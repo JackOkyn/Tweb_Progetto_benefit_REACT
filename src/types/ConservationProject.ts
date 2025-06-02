@@ -1,4 +1,4 @@
-export interface Participant {
+export interface User {
     id: number;
     name: string;
     email?: string;
@@ -7,10 +7,8 @@ export interface Participant {
 
 export interface ConservationProject {
     id: number;
-    title: string;
+    name: string;
     description: string;
-    startDate: string;
-    endDate: string;
-    status: string;
-    participants: Participant[];
+    users?: User[];
+    author?: string;
 }
