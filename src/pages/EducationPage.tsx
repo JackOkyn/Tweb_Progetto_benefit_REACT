@@ -59,7 +59,7 @@ const EducationPage: React.FC = () => {
     return (
         <div className="p-4">
             <div className="flex justify-between items-center mb-4">
-                <h1 className="text-2xl font-bold">Lista delle Educazioni</h1>
+                <h1 className="text-2xl text-black font-bold">Lista delle Educazioni</h1>
                 <button
                     onClick={() => {
                         setCurrentEducation({});
@@ -73,7 +73,7 @@ const EducationPage: React.FC = () => {
 
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                 {educations.map((edu) => (
-                    <div key={edu.id} className="border p-4 rounded shadow">
+                    <div key={edu.id} className="border p-4 rounded shadow bg-blue-300">
                         <h3 className="text-xl font-semibold">{edu.titleEducation}</h3>
                         <p>Autore: {edu.user.username}</p>
                         <p>Like: {edu.likesEducation}</p>
