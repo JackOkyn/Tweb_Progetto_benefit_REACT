@@ -1,7 +1,6 @@
 // src/App.tsx
 import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-
 // Context
 import { AuthProvider } from "./context/AuthContext";
 import { ProjectsProvider } from "./context/ProjectsContext";
@@ -12,7 +11,7 @@ import Sidebar from "./components/Sidebar";
 import Dashboard from "./pages/Dashboard";
 import Project from "./pages/Project";
 import MyActivity from "./pages/MyActivity";
-import Education from "./pages/Education";
+import EducationPage from "./pages/EducationPage.tsx";
 
 import AboutUs from "./pages/AboutUs";
 import 'aos/dist/aos.css';
@@ -32,7 +31,7 @@ const App: React.FC = () => {
                                     <Route path="/" element={<Dashboard />} />
                                     <Route path="/project" element={<Project />} />
                                     <Route path="/my-activity" element={<MyActivity />} />
-                                    <Route path="/education" element={<Education />} />
+                                    <Route path="/education" element={<EducationPage />} />
                                     <Route path="/aboutus" element={<AboutUs />} />
                                 </Routes>
                             </main>
