@@ -72,7 +72,7 @@ const EducationPage: React.FC = () => {
                 <h1 className="text-3xl font-bold text-black">Lista delle Educazioni</h1>
                 <button
                     onClick={() => {
-                        setCurrentEducation({});
+                        setCurrentEducation({ titleEducation: "", commentEducation: [] });
                         setShowModal(true);
                     }}
                     className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
@@ -87,8 +87,9 @@ const EducationPage: React.FC = () => {
                         key={edu.id}
                         id={edu.id}
                         title={edu.titleEducation}
-                        author={edu.user.username}
+                        author={edu.userId ? `Utente #${edu.userId}` : "Sconosciuto"}
                         likes={edu.likesEducation}
+                        comments={edu.commentEducation}
                         onLike={handleLike}
                         onEdit={() => {
                             setCurrentEducation(edu);
