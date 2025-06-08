@@ -1,5 +1,8 @@
 import React, { useState } from "react";
 import { useAuth } from "../context/AuthContext";
+import { commentEducationService } from '../service/commentEducationService'; // percorso da adattare
+
+
 
 interface Comment {
     idEducation: number;
@@ -16,6 +19,8 @@ interface WindowsEducationProps {
     onEdit: () => void;
     onDelete: () => void;
     onAddComment?: (id: number, comment: string) => void;
+    //onDeleteComment?: (educationId: number, commentIndex: number) => void;
+    onDeleteComment?: (commentId: number) => void;
 }
 
 const WindowsEducation: React.FC<WindowsEducationProps> = ({
@@ -28,6 +33,7 @@ const WindowsEducation: React.FC<WindowsEducationProps> = ({
                                                                onEdit,
                                                                onDelete,
                                                                onAddComment,
+                                                               onDeleteComment,
                                                            }) => {
     const { user } = useAuth();
     const [newComment, setNewComment] = useState("");
@@ -53,7 +59,7 @@ const WindowsEducation: React.FC<WindowsEducationProps> = ({
                     ❤️ Like <span className="ml-2">{likes}</span>
                 </button>
 
-                {user?.role === "admin" && (
+                {user && user.role?.toLowerCase() === "admin" && (
                     <div className="flex gap-2">
                         <button
                             onClick={onEdit}
@@ -78,12 +84,20 @@ const WindowsEducation: React.FC<WindowsEducationProps> = ({
                     <p className="text-gray-400 italic">Nessun commento ancora.</p>
                 ) : (
                     <ul className="space-y-2">
-                        {comments.map((c, index) => (
+                        {comments.map((c) => (
                             <li
-                                key={index}
-                                className="bg-gray-100 px-4 py-2 rounded-lg text-sm text-gray-700"
+                                key={c.idEducation}
+                                className="bg-gray-100 px-4 py-2 rounded-lg text-sm text-gray-700 flex justify-between items-center"
                             >
-                                {c.educationComment}
+                                <span>{c.educationComment}</span>
+                                {user?.role?.toLowerCase() === "admin" && onDeleteComment && (
+                                    <button
+                                        onClick={() => onDeleteComment(c.idEducation)}
+                                        className="text-red-500 text-xs hover:underline ml-4"
+                                    >
+                                        Elimina
+                                    </button>
+                                )}
                             </li>
                         ))}
                     </ul>

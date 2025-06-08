@@ -2,6 +2,11 @@ import React, { useEffect, useState } from "react";
 import { educationService } from "../service/educationServices";
 import { Education } from "../types/Education";
 import WindowsEducation from "../components/WindowsEducation";
+import EducationModal from "../components/EducationModal";
+import { useAuth } from "../context/AuthContext"; // Assunto
+import { commentEducationService } from '../service/commentEducationServices.ts'; // percorso da adattare
+
+
 
 const EducationPage: React.FC = () => {
     const [educations, setEducations] = useState<Education[]>([]);
@@ -12,6 +17,8 @@ const EducationPage: React.FC = () => {
         titleEducation: "",
         commentEducation: [],
     });
+
+    const { user } = useAuth(); // ← Otteniamo user con userId o equivalente
 
     useEffect(() => {
         loadEducations();
@@ -38,6 +45,19 @@ const EducationPage: React.FC = () => {
             }
         }
     };
+    const handleDeleteComment = async (commentId: number) => {
+        const success = await commentEducationService.deleteComment(commentId);
+        if (success) {
+            setEducations((prev) =>
+                prev.map((edu) => ({
+                    ...edu,
+                    comments: edu.comments.filter((c) => c.idEducation !== commentId),
+                }))
+            );
+        } else {
+            alert("Errore durante l'eliminazione del commento");
+        }
+    };;
 
     const handleLike = async (id: number) => {
         try {
@@ -50,11 +70,23 @@ const EducationPage: React.FC = () => {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        if (!user?.id) {
+            alert("Utente non autenticato o senza ID.");
+            return;
+        }
+
+        const payload = {
+            titleEducation: currentEducation.titleEducation,
+            likesEducation: currentEducation.likesEducation ?? 0,
+            userId: user.id, // 🔥 NECESSARIO!
+        };
+
         try {
             if (currentEducation.id) {
-                await educationService.update(currentEducation.id, currentEducation);
+                await educationService.update(currentEducation.id, payload);
             } else {
-                await educationService.create(currentEducation);
+                await educationService.create(payload); // 💡 Deve contenere userId
             }
             setShowModal(false);
             loadEducations();
@@ -62,6 +94,7 @@ const EducationPage: React.FC = () => {
             setError(err instanceof Error ? err.message : "Errore nel salvataggio");
         }
     };
+
 
     if (loading) return <div>Caricamento in corso...</div>;
     if (error) return <div>Errore: {error}</div>;
@@ -77,7 +110,7 @@ const EducationPage: React.FC = () => {
                     }}
                     className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
                 >
-                    Nuova Educazione
+                    Nuovo articolo
                 </button>
             </div>
 
@@ -96,50 +129,18 @@ const EducationPage: React.FC = () => {
                             setShowModal(true);
                         }}
                         onDelete={() => handleDelete(edu.id)}
+                        onDeleteComment={handleDeleteComment}
                     />
                 ))}
             </div>
 
             {showModal && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                    <div className="bg-white p-6 rounded-xl shadow-lg w-96">
-                        <h2 className="text-xl font-bold mb-4">
-                            {currentEducation.id ? "Modifica" : "Nuova"} Educazione
-                        </h2>
-                        <form onSubmit={handleSubmit}>
-                            <div className="mb-4">
-                                <label className="block text-sm font-medium mb-1">Titolo</label>
-                                <input
-                                    type="text"
-                                    value={currentEducation.titleEducation || ""}
-                                    onChange={(e) =>
-                                        setCurrentEducation({
-                                            ...currentEducation,
-                                            titleEducation: e.target.value,
-                                        })
-                                    }
-                                    className="w-full border border-gray-300 p-2 rounded"
-                                    required
-                                />
-                            </div>
-                            <div className="flex justify-end gap-2">
-                                <button
-                                    type="button"
-                                    onClick={() => setShowModal(false)}
-                                    className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded"
-                                >
-                                    Annulla
-                                </button>
-                                <button
-                                    type="submit"
-                                    className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
-                                >
-                                    Salva
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
+                <EducationModal
+                    education={currentEducation}
+                    setEducation={setCurrentEducation}
+                    onClose={() => setShowModal(false)}
+                    onSubmit={handleSubmit}
+                />
             )}
         </div>
     );

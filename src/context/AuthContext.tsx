@@ -1,11 +1,11 @@
-
 import React, { createContext, useContext, useState } from "react";
 
 /** Definiamo i possibili ruoli dell’utente. */
 export type UserRole = "admin" | "community";
 
-/** Tipo che descrive i dati utente. */
+/** Tipo che descrive i dati utente, ora con ID. */
 export interface UserData {
+    id: number;
     nickname: string;
     email: string;
     password: string;
@@ -20,9 +20,7 @@ interface AuthContextProps {
     logout: () => void;
 }
 
-/**
- Creiamo il contesto con valori di default (che verranno poi sovrascritti).
- */
+/** Creiamo il contesto con valori di default. */
 const AuthContext = createContext<AuthContextProps>({
     user: null,
     login: () => {},
@@ -30,23 +28,23 @@ const AuthContext = createContext<AuthContextProps>({
     logout: () => {},
 });
 
-/**
- Il provider che avvolge l’applicazione e fornisce lo stato utente.
- */
+/** Provider che avvolge l’applicazione e fornisce lo stato utente. */
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [user, setUser] = useState<UserData | null>(null);
 
     /**
      * Funzione di login fittizia:
-     * - Se la password è "admin", l’utente avrà ruolo admin,
-     * - Altrimenti sarà community.
+     * - Se la password è "admin", l’utente avrà ruolo admin e id 1,
+     * - Altrimenti sarà community con id 2.
      */
     const login = (email: string, password: string) => {
         if (!email || !password) return;
 
         const role: UserRole = password === "admin" ? "admin" : "community";
+        const id = role === "admin" ? 1 : 2;
 
         const fakeUser: UserData = {
+            id,
             nickname: role === "admin" ? "Mario" : "Luigi",
             email,
             password,
@@ -58,16 +56,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     /**
      * Funzione di registrazione fittizia:
-     * Qui potresti far scegliere un ruolo o assegnarlo di default (community).
+     * Assegna ruolo "community" e genera un id casuale.
      */
     const signUp = (nickname: string, email: string, password: string) => {
-        // Assegniamo di default il ruolo "community" all’utente registrato
         const fakeUser: UserData = {
+            id: Math.floor(Math.random() * 10000), // ID simulato
             nickname,
             email,
             password,
             role: "community",
         };
+
         setUser(fakeUser);
     };
 
@@ -83,5 +82,5 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     );
 };
 
-/** Per accedere con piu semplicità ad AuthContext */
+/** Hook per accedere facilmente al contesto */
 export const useAuth = () => useContext(AuthContext);
