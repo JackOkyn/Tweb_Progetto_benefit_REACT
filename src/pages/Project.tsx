@@ -249,26 +249,26 @@ const Project: React.FC = () => {
                     </div>
                 )}
             </div>
-
             {/* Barra di ricerca */}
-            <div className="mb-6 bg-gray-50 p-4 rounded-lg">
-                <h3 className="text-lg font-semibold mb-3">Cerca Progetti</h3>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="mb-8 bg-white shadow-md rounded-xl p-6">
+                <h3 className="text-xl font-semibold mb-5 text-gray-800">Cerca Progetti</h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-end">
                     {/* Ricerca per ID */}
-                    <div>
-                        <label className="block text-sm font-medium mb-1">Cerca per ID</label>
-                        <div className="flex">
+                    <div className="col-span-2">
+                        <label className="block text-sm font-medium text-gray-600 mb-2">Cerca per ID</label>
+                        <div className="flex rounded-lg overflow-hidden border border-gray-300 focus-within:ring-2 focus-within:ring-blue-400 transition">
                             <input
                                 type="number"
                                 value={searchById}
                                 onChange={(e) => setSearchById(e.target.value)}
                                 placeholder="ID progetto..."
-                                className="flex-1 border border-gray-300 rounded-l px-3 py-2"
+                                className="flex-1 px-4 py-3 text-gray-700 placeholder-gray-400 outline-none"
                             />
                             <button
                                 onClick={searchProjectById}
                                 disabled={isSearching}
-                                className="bg-blue-500 text-white px-3 py-2 rounded-r hover:bg-blue-600 disabled:opacity-50"
+                                className="bg-blue-600 text-white px-6 py-3 font-semibold hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50 transition"
+                                aria-label="Cerca progetto per ID"
                             >
                                 Cerca
                             </button>
@@ -276,10 +276,11 @@ const Project: React.FC = () => {
                     </div>
 
                     {/* Pulsante reset */}
-                    <div className="flex items-end">
+                    <div>
                         <button
                             onClick={clearSearch}
-                            className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600 transition"
+                            className="w-full bg-gray-200 text-gray-700 py-3 rounded-lg hover:bg-gray-300 font-medium transition"
+                            aria-label="Mostra tutti i progetti"
                         >
                             Mostra Tutti
                         </button>
@@ -288,27 +289,27 @@ const Project: React.FC = () => {
 
                 {/* Indicatore ricerca */}
                 {isSearching && (
-                    <div className="mt-2 text-blue-600">
+                    <p className="mt-4 text-blue-600 font-medium animate-pulse">
                         Ricerca in corso...
-                    </div>
+                    </p>
                 )}
 
                 {searchResults.length > 0 && (
-                    <div className="mt-2 text-green-600">
-                        Trovati {searchResults.length} risultati
-                    </div>
+                    <p className="mt-4 text-green-600 font-medium">
+                        Trovati {searchResults.length} risultato{searchResults.length > 1 ? 'i' : ''}
+                    </p>
                 )}
             </div>
 
             {/* Messaggi di successo/errore */}
             {success && (
-                <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
+                <div className="mb-6 rounded-lg bg-green-50 border border-green-300 px-5 py-4 text-green-700 shadow-sm">
                     {success}
                 </div>
             )}
 
             {error && (
-                <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+                <div className="mb-6 rounded-lg bg-red-50 border border-red-300 px-5 py-4 text-red-700 shadow-sm">
                     {error}
                 </div>
             )}
