@@ -80,10 +80,7 @@ const NewEducationModal: React.FC<NewEducationModalProps> = ({
                             accept="image/*"
                             onChange={handleFileChange}
                         />
-                        {/*
-              In futuro potresti aggiungere un'anteprima se vuoi,
-              usando un FileReader e un tag <img src={preview} />
-            */}
+
                     </div>
 
                     <div className="flex justify-end space-x-2 mt-4">
