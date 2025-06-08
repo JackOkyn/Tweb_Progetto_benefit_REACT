@@ -3,8 +3,7 @@ import { educationService } from "../service/educationServices";
 import { Education } from "../types/Education";
 import WindowsEducation from "../components/WindowsEducation";
 import EducationModal from "../components/EducationModal";
-import { useAuth } from "../context/AuthContext"; // Assunto
-import { commentEducationService } from '../service/commentEducationServices.ts'; // percorso da adattare
+import { useAuth } from "../context/AuthContext"; // Assunto // percorso da adattare
 
 
 
