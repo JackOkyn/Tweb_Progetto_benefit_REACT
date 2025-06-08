@@ -57,6 +57,14 @@ const EducationPage: React.FC = () => {
             console.error("Errore nella cancellazione del commento:", error);
         }
     };
+    const handleAddComment = async (educationId: number, comment: string) => {
+        try {
+            await commentEducationService.addComment(educationId, comment);
+            loadEducations();
+        } catch (error) {
+            console.error("Errore aggiunta commento:", error);
+        }
+    };
 
     const handleLike = async (id: number) => {
         try {
@@ -129,6 +137,7 @@ const EducationPage: React.FC = () => {
                         }}
                         onDelete={() => handleDelete(edu.id)}
                         onDeleteComment={handleDeleteComment}
+                        onAddComment={handleAddComment}
                     />
                 ))}
             </div>

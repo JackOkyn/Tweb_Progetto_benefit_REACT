@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useAuth } from "../context/AuthContext";
-import { commentEducationService } from '../service/commentEducationService'; // percorso da adattare
+
 
 
 
