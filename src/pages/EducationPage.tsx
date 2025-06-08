@@ -4,7 +4,7 @@ import { Education } from "../types/Education";
 import WindowsEducation from "../components/WindowsEducation";
 import EducationModal from "../components/EducationModal";
 import { useAuth } from "../context/AuthContext"; // Assunto // percorso da adattare
-
+import {commentEducationService} from "../service/commentEducationService";
 
 
 const EducationPage: React.FC = () => {
@@ -45,18 +45,18 @@ const EducationPage: React.FC = () => {
         }
     };
     const handleDeleteComment = async (commentId: number) => {
-        const success = await commentEducationService.deleteComment(commentId);
-        if (success) {
+        try {
+            await commentEducationService.deleteComment(commentId);
             setEducations((prev) =>
-                prev.map((edu) => ({
-                    ...edu,
-                    comments: edu.comments.filter((c) => c.idEducation !== commentId),
+                prev.map((education) => ({
+                    ...education,
+                    commentEducation: education.commentEducation.filter((c) => c.idEducation !== commentId),
                 }))
             );
-        } else {
-            alert("Errore durante l'eliminazione del commento");
+        } catch (error) {
+            console.error("Errore nella cancellazione del commento:", error);
         }
-    };;
+    };
 
     const handleLike = async (id: number) => {
         try {
@@ -119,7 +119,7 @@ const EducationPage: React.FC = () => {
                         key={edu.id}
                         id={edu.id}
                         title={edu.titleEducation}
-                        author={edu.userId ? `Utente #${edu.userId}` : "Sconosciuto"}
+                        author={edu.user ? `Utente #${edu.user}` : "Sconosciuto"}
                         likes={edu.likesEducation}
                         comments={edu.commentEducation}
                         onLike={handleLike}
