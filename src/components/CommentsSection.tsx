@@ -24,14 +24,7 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ articleId }) => {
     const [newComment, setNewComment] = useState("");
 
     /**
-     * Simuliamo il caricamento dei commenti dal server. (Fittizio)
-     * In futuro potresti fare:
-     *   useEffect(() => {
-     *     fetch(`/api/articles/${articleId}/comments`)
-     *       .then(res => res.json())
-     *       .then(data => setComments(data))
-     *       .catch(err => console.error(err));
-     *   }, [articleId]);
+     * Simulo il caricamento dei commenti dal server. (Fittizio)
      */
     useEffect(() => {
         // Dati fittizi di esempio
@@ -52,14 +45,6 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ articleId }) => {
 
     /**
      * Funzione per aggiungere un commento. (Fittizia)
-     * In futuro:
-     *   fetch(`/api/articles/${articleId}/comments`, {
-     *     method: "POST",
-     *     body: JSON.stringify({ text: newComment }),
-     *     headers: { "Content-Type": "application/json" },
-     *   })
-     *     .then(() => caricare di nuovo i commenti dal server oppure aggiornarli in locale)
-     *     .catch(err => console.error(err));
      */
     const handleAddComment = () => {
         if (!user) return; // se non è loggato, non facciamo nulla
@@ -76,10 +61,6 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ articleId }) => {
 
     /**
      * Funzione per eliminare un commento (disponibile solo ad admin).
-     * In futuro:
-     *   fetch(`/api/articles/${articleId}/comments/${commentId}`, { method: "DELETE" })
-     *     .then(() => rimuovere il commento dallo stato)
-     *     .catch(err => console.error(err));
      */
     const handleDeleteComment = (commentId: number) => {
         setComments((prev) => prev.filter((c) => c.id !== commentId));

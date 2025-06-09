@@ -14,19 +14,19 @@ const Dashboard: React.FC = () => {
             id: 1,
             position: [45.843862, 6.854017] as [number, number],
             name: "Ghiacciaio Monte Bianco",
-            data: { temperature: -13.5, co2Impact: 60.4, communityActions: 75 }
+            data: { temperature: 3.5, co2Impact: 60.4, communityActions: 75 }
         },
         {
             id: 2,
             position: [45.921256, 7.861097] as [number, number],
             name: "Ghiacciaio Zermat",
-            data: { temperature: -20.0, co2Impact: 150.3, communityActions: 210 }
+            data: { temperature: 1.0, co2Impact: 150.3, communityActions: 210 }
         },
         {
             id: 3,
             position: [46.837567, 10.757295] as [number, number],
             name: "Kaunertal",
-            data: { temperature: 8.2, co2Impact: 180.8, communityActions: 20 }
+            data: { temperature: -1.2, co2Impact: 180.8, communityActions: 20 }
         },
     ];
 

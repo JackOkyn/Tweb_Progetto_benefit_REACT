@@ -2,8 +2,7 @@ import React, { useState } from "react";
 import { useAuth } from "../context/AuthContext";
 
 /**
- * Component che mostra i pulsanti o i form di Login/SignUp
- * e, se l’utente è loggato, il menu a tendina con Logout.
+ * Component che mostra i pulsanti Login/SignUp, invece se l’utente è loggato il menu a tendina con Logout.
  */
 const AuthButtons: React.FC = () => {
     // Preleviamo user e le funzioni dal nostro AuthContext
@@ -53,7 +52,7 @@ const AuthButtons: React.FC = () => {
         setShowProfileDropdown(false);
     };
 
-    // Se l'utente è loggato, mostriamo il nickname e il menu a tendina
+    // Se l'utente è loggato, mostriamo il nickname
     if (user) {
         return (
             <div className="relative">

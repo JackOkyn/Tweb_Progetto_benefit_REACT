@@ -1,9 +1,9 @@
 import React, { createContext, useContext, useState } from "react";
 
-/** Definiamo i possibili ruoli dell’utente. */
+/** Ruoli dell'utente */
 export type UserRole = "admin" | "community";
 
-/** Tipo che descrive i dati utente, ora con ID. */
+/** dati utente con ID. */
 export interface UserData {
     id: number;
     nickname: string;
@@ -12,7 +12,7 @@ export interface UserData {
     role: UserRole;
 }
 
-/** Struttura del contesto: user + metodi di login/logout. */
+/** Struttura del context: user + metodi di login/logout. */
 interface AuthContextProps {
     user: UserData | null;
     login: (email: string, password: string) => void;
@@ -20,7 +20,7 @@ interface AuthContextProps {
     logout: () => void;
 }
 
-/** Creiamo il contesto con valori di default. */
+/** context con valori di default. */
 const AuthContext = createContext<AuthContextProps>({
     user: null,
     login: () => {},
@@ -82,5 +82,5 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     );
 };
 
-/** Hook per accedere facilmente al contesto */
+/** Hook per accedere al context */
 export const useAuth = () => useContext(AuthContext);

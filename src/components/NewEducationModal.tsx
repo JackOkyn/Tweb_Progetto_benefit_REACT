@@ -4,10 +4,7 @@ import React, { useState } from "react";
 interface NewEducationModalProps {
     isOpen: boolean;
     onClose: () => void;
-    /**
-     * Adesso onCreate riceve ANCHE il File (immagine)
-     * invece di un semplice imageUrl string.
-     */
+
     onCreate: (title: string, snippet: string, file: File | null) => void;
 }
 
@@ -21,7 +18,7 @@ const NewEducationModal: React.FC<NewEducationModalProps> = ({
     // Stato locale per il File
     const [file, setFile] = useState<File | null>(null);
 
-    /** Gestione cambio file */
+    /** Gestione cambio file per implemetazione futura */
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files.length > 0) {
             setFile(e.target.files[0]);
