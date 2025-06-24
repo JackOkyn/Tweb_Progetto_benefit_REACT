@@ -1,22 +1,15 @@
 // src/components/WindowsEducation.tsx
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
-import {CommentEducation} from "../types/CommentEducation.ts";
-
-
-export interface Comment {
-    idEducation: number;
-    educationComment: string;
-}
+import { CommentEducation } from "../types/CommentEducation";
+import { likeService, User } from "../service/likeService";
 
 export interface WindowsEducationProps {
     id: number;
     title: string;
     author: string;
-    likes: number;
     description: string;
     comments: CommentEducation[];
-    onLike: (id: number) => void;
     onEdit: () => void;
     onDelete: () => void;
     onAddComment?: (id: number, comment: string) => void;
@@ -27,10 +20,8 @@ const WindowsEducation: React.FC<WindowsEducationProps> = ({
                                                                id,
                                                                title,
                                                                author,
-                                                               likes,
                                                                description,
                                                                comments,
-                                                               onLike,
                                                                onEdit,
                                                                onDelete,
                                                                onAddComment,
@@ -40,14 +31,51 @@ const WindowsEducation: React.FC<WindowsEducationProps> = ({
     const [newComment, setNewComment] = useState("");
     const [isExpanded, setIsExpanded] = useState(false);
 
+    // --- Like state ---
+    const [likesCount, setLikesCount] = useState<number>(0);
+    const [isLiked, setIsLiked] = useState<boolean>(false);
+
+    // --- Description preview logic ---
     const safeComments = comments ?? [];
     const safeDescription = description ?? "";
-
     const PREVIEW_LENGTH = 200;
     const isLong = safeDescription.length > PREVIEW_LENGTH;
     const previewText = isLong
         ? safeDescription.slice(0, PREVIEW_LENGTH) + "…"
         : safeDescription;
+
+    // Fetch likes count
+    useEffect(() => {
+        (async () => {
+            try {
+                const count = await likeService.getCount(id);
+                setLikesCount(count);
+
+                if (user) {
+                    const usersWhoLiked: User[] = await likeService.getUsers(id);
+                    setIsLiked(usersWhoLiked.some((u) => u.id === user.id));
+                }
+            } catch (err) {
+                console.error("Errore likeService:", err);
+            }
+        })();
+    }, [id, user]);
+
+    // Toggle like/unlike
+    const handleToggleLike = async () => {
+        if (!user) {
+            alert("Devi essere loggato per mettere like.");
+            return;
+        }
+        try {
+            const nowLiked = await likeService.toggle(id, user.id);
+            setIsLiked(nowLiked);
+            const freshCount = await likeService.getCount(id);
+            setLikesCount(freshCount);
+        } catch (err) {
+            console.error("Errore toggle like:", err);
+        }
+    };
 
     const handleCommentSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -81,10 +109,15 @@ const WindowsEducation: React.FC<WindowsEducationProps> = ({
             {/* Like & Admin actions */}
             <div className="flex items-center justify-between">
                 <button
-                    onClick={() => onLike(id)}
-                    className="flex items-center bg-blue-500 hover:bg-blue-600 text-white px-4 py-1 rounded-full text-sm"
+                    onClick={handleToggleLike}
+                    className={`flex items-center px-4 py-1 rounded-full text-sm text-white ${
+                        isLiked
+                            ? "bg-red-500 hover:bg-red-600"
+                            : "bg-blue-500 hover:bg-blue-600"
+                    }`}
                 >
-                    ❤️ Like <span className="ml-2">{likes}</span>
+                    {isLiked ? "💔 Unlike" : "❤️ Like"}
+                    <span className="ml-2">{likesCount}</span>
                 </button>
                 {user?.role?.toLowerCase() === "admin" && (
                     <div className="flex gap-2">
@@ -133,7 +166,10 @@ const WindowsEducation: React.FC<WindowsEducationProps> = ({
 
             {/* Nuovo commento (solo se loggati) */}
             {user && onAddComment && (
-                <form onSubmit={handleCommentSubmit} className="mt-4 flex flex-col gap-2">
+                <form
+                    onSubmit={handleCommentSubmit}
+                    className="mt-4 flex flex-col gap-2"
+                >
           <textarea
               value={newComment}
               onChange={(e) => setNewComment(e.target.value)}
