@@ -1,153 +1,168 @@
-import React, { useEffect, useState } from "react";
+// src/pages/EducationPage.tsx
+import React, { useState, useEffect } from "react";
+import { useAuth } from "../context/AuthContext";
+import { Education, CommentEducation } from "../types/Education";
 import { educationService } from "../service/educationServices";
-import { Education } from "../types/Education";
+import { commentEducationService } from "../service/commentEducationService";
 import WindowsEducation from "../components/WindowsEducation";
 import EducationModal from "../components/EducationModal";
-import { useAuth } from "../context/AuthContext"; // Assunto // percorso da adattare
-import {commentEducationService} from "../service/commentEducationService";
-
 
 const EducationPage: React.FC = () => {
+    const { user } = useAuth();
     const [educations, setEducations] = useState<Education[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
-    const [showModal, setShowModal] = useState(false);
-    const [currentEducation, setCurrentEducation] = useState<Partial<Education>>({
-        titleEducation: "",
-        commentEducation: [],
-    });
+    const [modalOpen, setModalOpen] = useState(false);
+    const [editing, setEditing] = useState<Partial<Education>>({});
 
-    const { user } = useAuth(); // ← Otteniamo user con userId o equivalente
-
+    // Carica tutte le educazioni
     useEffect(() => {
-        loadEducations();
+        educationService
+            .getAll()
+            .then(setEducations)
+            .catch((err) => console.error(err));
     }, []);
 
-    const loadEducations = async () => {
+    // Apri modal per creazione
+    const handleNew = () => {
+        setEditing({});
+        setModalOpen(true);
+    };
+
+    // Apri modal per modifica
+    const handleEditEducation = (edu: Education) => {
+        setEditing({
+            id: edu.id,
+            titleEducation: edu.titleEducation,
+            descriptionEducation: edu.descriptionEducation,
+            userId: edu.userId,
+        });
+        setModalOpen(true);
+    };
+
+    // Elimina un articolo
+    const handleDeleteEducation = async (id: number) => {
+        if (!window.confirm("Sei sicuro di voler eliminare questo articolo?")) {
+            return;
+        }
         try {
-            const data = await educationService.getAll();
-            setEducations(data);
-            setLoading(false);
+            await educationService.delete(id);
+            setEducations((prev) => prev.filter((e) => e.id !== id));
         } catch (err) {
-            setError(err instanceof Error ? err.message : "Errore nel caricamento");
-            setLoading(false);
+            console.error(err);
+            alert("Errore durante l'eliminazione");
         }
     };
 
-    const handleDelete = async (id: number) => {
-        if (window.confirm("Sei sicuro di voler eliminare questa educazione?")) {
-            try {
-                await educationService.delete(id);
-                loadEducations();
-            } catch (err) {
-                setError(err instanceof Error ? err.message : "Errore nell'eliminazione");
+    // Submit del modal (create o update)
+    const handleModalSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        try {
+            if (editing.id) {
+                // --- UPDATE ---
+                const updated = await educationService.update(
+                    editing.id,
+                    editing
+                );
+                setEducations((prev) =>
+                    prev.map((e) => (e.id === updated.id ? updated : e))
+                );
+            } else {
+                // --- CREATE ---
+                const toCreate: Partial<Education> = {
+                    ...editing,
+                    userId: user?.id,
+                };
+                const created = await educationService.create(toCreate);
+                setEducations((prev) => [...prev, created]);
             }
+            setModalOpen(false);
+        } catch (err) {
+            console.error(err);
+            alert("Errore nel salvataggio");
         }
     };
+
+    // Aggiungi commento (già funzionante)
+    const handleAddComment = async (
+        educationId: number,
+        commentText: string
+    ) => {
+        try {
+            const newComment: CommentEducation =
+                await commentEducationService.addComment(
+                    educationId,
+                    commentText
+                );
+            setEducations((prev) =>
+                prev.map((e) =>
+                    e.id === educationId
+                        ? {
+                            ...e,
+                            commentEducation: [...e.commentEducation, newComment],
+                        }
+                        : e
+                )
+            );
+        } catch (err) {
+            console.error(err);
+            alert("Impossibile aggiungere il commento");
+        }
+    };
+
+    // Elimina commento (già funzionante)
     const handleDeleteComment = async (commentId: number) => {
         try {
             await commentEducationService.deleteComment(commentId);
             setEducations((prev) =>
-                prev.map((education) => ({
-                    ...education,
-                    commentEducation: education.commentEducation.filter((c) => c.idEducation !== commentId),
+                prev.map((e) => ({
+                    ...e,
+                    commentEducation: e.commentEducation.filter(
+                        (c) => c.idEducation !== commentId
+                    ),
                 }))
             );
-        } catch (error) {
-            console.error("Errore nella cancellazione del commento:", error);
-        }
-    };
-    const handleAddComment = async (educationId: number, comment: string) => {
-        try {
-            await commentEducationService.addComment(educationId, comment);
-            loadEducations();
-        } catch (error) {
-            console.error("Errore aggiunta commento:", error);
-        }
-    };
-
-    const handleLike = async (id: number) => {
-        try {
-            await educationService.like(id);
-            loadEducations();
         } catch (err) {
-            setError(err instanceof Error ? err.message : "Errore nel mettere like");
+            console.error(err);
+            alert("Impossibile eliminare il commento");
         }
     };
-
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-
-        if (!user?.id) {
-            alert("Utente non autenticato o senza ID.");
-            return;
-        }
-
-        const payload = {
-            titleEducation: currentEducation.titleEducation,
-            likesEducation: currentEducation.likesEducation ?? 0,
-            userId: user.id, // 🔥 NECESSARIO!
-        };
-
-        try {
-            if (currentEducation.id) {
-                await educationService.update(currentEducation.id, payload);
-            } else {
-                await educationService.create(payload); // 💡 Deve contenere userId
-            }
-            setShowModal(false);
-            loadEducations();
-        } catch (err) {
-            setError(err instanceof Error ? err.message : "Errore nel salvataggio");
-        }
-    };
-
-
-    if (loading) return <div>Caricamento in corso...</div>;
-    if (error) return <div>Errore: {error}</div>;
 
     return (
-        <div className="p-6 bg-gray-100 min-h-screen">
-            <div className="flex justify-between items-center mb-6">
-                <h1 className="text-3xl font-bold text-black">Lista delle Educazioni</h1>
+        <div className="p-6 space-y-4">
+            {/* Solo admin può creare */}
+            {user?.role?.toLowerCase() === "admin" && (
                 <button
-                    onClick={() => {
-                        setCurrentEducation({ titleEducation: "", commentEducation: [] });
-                        setShowModal(true);
-                    }}
-                    className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
+                    onClick={handleNew}
+                    className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded"
                 >
-                    Nuovo articolo
+                    Nuova Educazione
                 </button>
-            </div>
+            )}
 
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                {educations.map((edu) => (
-                    <WindowsEducation
-                        key={edu.id}
-                        id={edu.id}
-                        title={edu.titleEducation}
-                        author={edu.user ? `Utente #${edu.user}` : "Sconosciuto"}
-                        likes={edu.likesEducation}
-                        comments={edu.commentEducation}
-                        onLike={handleLike}
-                        onEdit={() => {
-                            setCurrentEducation(edu);
-                            setShowModal(true);
-                        }}
-                        onDelete={() => handleDelete(edu.id)}
-                        onDeleteComment={handleDeleteComment}
-                        onAddComment={handleAddComment}
-                    />
-                ))}
-            </div>
+            {/* Lista di cards */}
+            {educations.map((edu) => (
+                <WindowsEducation
+                    key={edu.id}
+                    id={edu.id}
+                    title={edu.titleEducation}
+                    author={edu.user?.username || "Sconosciuto"}
+                    likes={edu.likes ?? 0}
+                    description={edu.descriptionEducation}
+                    comments={edu.commentEducation}
+                    onLike={() => {}}
+                    onEdit={() => handleEditEducation(edu)}
+                    onDelete={() => handleDeleteEducation(edu.id)}
+                    onAddComment={handleAddComment}
+                    onDeleteComment={handleDeleteComment}
+                />
+            ))}
 
-            {showModal && (
+            {/* Modal per create/edit */}
+            {modalOpen && (
                 <EducationModal
-                    education={currentEducation}
-                    setEducation={setCurrentEducation}
-                    onClose={() => setShowModal(false)}
-                    onSubmit={handleSubmit}
+                    education={editing}
+                    setEducation={setEditing}
+                    onClose={() => setModalOpen(false)}
+                    onSubmit={handleModalSubmit}
                 />
             )}
         </div>

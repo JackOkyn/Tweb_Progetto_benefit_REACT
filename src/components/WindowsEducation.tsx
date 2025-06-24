@@ -1,25 +1,25 @@
+// src/components/WindowsEducation.tsx
 import React, { useState } from "react";
 import { useAuth } from "../context/AuthContext";
+import {CommentEducation} from "../types/CommentEducation.ts";
 
 
-
-
-interface Comment {
+export interface Comment {
     idEducation: number;
     educationComment: string;
 }
 
-interface WindowsEducationProps {
+export interface WindowsEducationProps {
     id: number;
     title: string;
     author: string;
     likes: number;
-    comments: Comment[];
+    description: string;
+    comments: CommentEducation[];
     onLike: (id: number) => void;
     onEdit: () => void;
     onDelete: () => void;
     onAddComment?: (id: number, comment: string) => void;
-    //onDeleteComment?: (educationId: number, commentIndex: number) => void;
     onDeleteComment?: (commentId: number) => void;
 }
 
@@ -28,6 +28,7 @@ const WindowsEducation: React.FC<WindowsEducationProps> = ({
                                                                title,
                                                                author,
                                                                likes,
+                                                               description,
                                                                comments,
                                                                onLike,
                                                                onEdit,
@@ -37,6 +38,16 @@ const WindowsEducation: React.FC<WindowsEducationProps> = ({
                                                            }) => {
     const { user } = useAuth();
     const [newComment, setNewComment] = useState("");
+    const [isExpanded, setIsExpanded] = useState(false);
+
+    const safeComments = comments ?? [];
+    const safeDescription = description ?? "";
+
+    const PREVIEW_LENGTH = 200;
+    const isLong = safeDescription.length > PREVIEW_LENGTH;
+    const previewText = isLong
+        ? safeDescription.slice(0, PREVIEW_LENGTH) + "…"
+        : safeDescription;
 
     const handleCommentSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -48,9 +59,26 @@ const WindowsEducation: React.FC<WindowsEducationProps> = ({
 
     return (
         <div className="bg-white p-6 rounded-2xl shadow-md hover:shadow-lg transition-all space-y-4">
-            <div className="text-sm text-gray-500">Autore: {author || "Sconosciuto"}</div>
+            {/* Autore e Titolo */}
+            <div className="text-sm text-gray-500">
+                Autore: {author || "Sconosciuto"}
+            </div>
             <h2 className="text-2xl font-bold text-gray-900">{title}</h2>
 
+            {/* Descrizione */}
+            <div className="text-gray-700 text-sm">
+                <p>{isExpanded ? safeDescription : previewText}</p>
+                {isLong && (
+                    <button
+                        onClick={() => setIsExpanded((prev) => !prev)}
+                        className="text-blue-500 text-xs mt-1 hover:underline"
+                    >
+                        {isExpanded ? "Mostra meno" : "Espandi"}
+                    </button>
+                )}
+            </div>
+
+            {/* Like & Admin actions */}
             <div className="flex items-center justify-between">
                 <button
                     onClick={() => onLike(id)}
@@ -58,8 +86,7 @@ const WindowsEducation: React.FC<WindowsEducationProps> = ({
                 >
                     ❤️ Like <span className="ml-2">{likes}</span>
                 </button>
-
-                {user && user.role?.toLowerCase() === "admin" && (
+                {user?.role?.toLowerCase() === "admin" && (
                     <div className="flex gap-2">
                         <button
                             onClick={onEdit}
@@ -77,14 +104,14 @@ const WindowsEducation: React.FC<WindowsEducationProps> = ({
                 )}
             </div>
 
-            {/* Commenti */}
+            {/* Commenti (visibili a tutti) */}
             <div className="mt-4">
                 <h3 className="text-lg font-semibold text-gray-700 mb-2">Commenti</h3>
-                {comments.length === 0 ? (
+                {safeComments.length === 0 ? (
                     <p className="text-gray-400 italic">Nessun commento ancora.</p>
                 ) : (
                     <ul className="space-y-2">
-                        {comments.map((c) => (
+                        {safeComments.map((c) => (
                             <li
                                 key={c.idEducation}
                                 className="bg-gray-100 px-4 py-2 rounded-lg text-sm text-gray-700 flex justify-between items-center"
@@ -104,16 +131,16 @@ const WindowsEducation: React.FC<WindowsEducationProps> = ({
                 )}
             </div>
 
-            {/* Aggiunta commento (solo se loggati) */}
-            {user && (
+            {/* Nuovo commento (solo se loggati) */}
+            {user && onAddComment && (
                 <form onSubmit={handleCommentSubmit} className="mt-4 flex flex-col gap-2">
-                    <textarea
-                        value={newComment}
-                        onChange={(e) => setNewComment(e.target.value)}
-                        placeholder="Aggiungi un commento..."
-                        className="border border-gray-300 rounded-lg p-2 resize-none text-sm"
-                        rows={2}
-                    />
+          <textarea
+              value={newComment}
+              onChange={(e) => setNewComment(e.target.value)}
+              placeholder="Aggiungi un commento..."
+              className="border border-gray-300 rounded-lg p-2 resize-none text-sm"
+              rows={2}
+          />
                     <button
                         type="submit"
                         className="self-end bg-green-500 hover:bg-green-600 text-white px-4 py-1 rounded-full text-sm"
