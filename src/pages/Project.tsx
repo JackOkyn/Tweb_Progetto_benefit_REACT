@@ -2,12 +2,13 @@ import React, { useState, useEffect } from "react";
 import { useProjects } from "../context/ProjectsContext";
 import { useAuth } from "../context/AuthContext";
 import NewProjectModal from "../components/NewProjectModal";
+import WindowsProject from "../components/WindowsProject";
 import { projectService } from "../service/projectServices";
 import { ConservationProject } from "../types/ConservationProject";
 
 const Project: React.FC = () => {
     const { user } = useAuth();
-    const { addProject } = useProjects();
+    const { projects: generalProjects, addProject } = useProjects();
 
     // Stati per gestire i dati dall'API
     const [conservationProjects, setConservationProjects] = useState<ConservationProject[]>([]);
@@ -47,7 +48,6 @@ const Project: React.FC = () => {
         });
     }, []);
 
-
     const loadConservationProjects = async () => {
         try {
             setLoading(true);
@@ -67,6 +67,7 @@ const Project: React.FC = () => {
             setLoading(false);
         }
     };
+
     const searchProjectById = async () => {
         if (!searchById.trim()) return;
 
@@ -137,7 +138,6 @@ const Project: React.FC = () => {
                 await projectService.delete(id);
                 setSuccess('Progetto eliminato con successo!');
                 await loadConservationProjects();
-                // Rimuovi anche dai risultati di ricerca se presente
                 setSearchResults(prev => prev.filter(p => p.id !== id));
                 setTimeout(() => setSuccess(null), 3000);
             } catch (err) {
@@ -184,25 +184,6 @@ const Project: React.FC = () => {
         });
     };
 
-    const isUserParticipant = (project: ConservationProject): boolean => {
-        if (!user || !project.users) return false;
-        return project.users.some(u => u.name === user.nickname);
-    };
-
-    const canUserEditProject = (project: ConservationProject): boolean => {
-        if (!user) return false;
-
-        if (user.role === "admin") {
-            return !project.author || project.author === user.nickname;
-        }
-
-        return false;
-    };
-
-    const isAdmin = (): boolean => {
-        return user?.role === "admin";
-    };
-
     const closeModal = () => {
         setShowConservationModal(false);
         setCurrentProject({});
@@ -228,7 +209,7 @@ const Project: React.FC = () => {
                 <h1 className="text-2xl font-bold text-black">Gestione Progetti</h1>
                 {user && (
                     <div className="space-x-2">
-                        {isAdmin() && (
+                        {user.role === "admin" && (
                             <button
                                 onClick={() => {
                                     setCurrentProject({});
@@ -249,11 +230,11 @@ const Project: React.FC = () => {
                     </div>
                 )}
             </div>
+
             {/* Barra di ricerca */}
             <div className="mb-8 bg-white shadow-md rounded-xl p-6">
                 <h3 className="text-xl font-semibold mb-5 text-gray-800">Cerca Progetti</h3>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-end">
-                    {/* Ricerca per ID */}
                     <div className="col-span-2">
                         <label className="block text-sm font-medium text-gray-600 mb-2">Cerca per ID</label>
                         <div className="flex rounded-lg overflow-hidden border border-gray-300 focus-within:ring-2 focus-within:ring-blue-400 transition">
@@ -268,26 +249,21 @@ const Project: React.FC = () => {
                                 onClick={searchProjectById}
                                 disabled={isSearching}
                                 className="bg-blue-600 text-white px-6 py-3 font-semibold hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50 transition"
-                                aria-label="Cerca progetto per ID"
                             >
                                 Cerca
                             </button>
                         </div>
                     </div>
-
-                    {/* Pulsante reset */}
                     <div>
                         <button
                             onClick={clearSearch}
                             className="w-full bg-gray-200 text-gray-700 py-3 rounded-lg hover:bg-gray-300 font-medium transition"
-                            aria-label="Mostra tutti i progetti"
                         >
                             Mostra Tutti
                         </button>
                     </div>
                 </div>
 
-                {/* Indicatore ricerca */}
                 {isSearching && (
                     <p className="mt-4 text-blue-600 font-medium animate-pulse">
                         Ricerca in corso...
@@ -320,76 +296,18 @@ const Project: React.FC = () => {
                     {searchResults.length > 0 ? 'Risultati Ricerca' : 'Progetti di Conservazione'}
                 </h2>
                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                    {displayProjects.map((project) => {
-                        const canEdit = canUserEditProject(project);
-                        const isParticipant = isUserParticipant(project);
-                        const projectUsers = project.users || [];
-
-                        return (
-                            <div key={project.id} className="border p-4 rounded shadow bg-white">
-                                <div className="flex justify-between items-start mb-2">
-                                    <h3 className="text-lg font-semibold text-black">{project.name}</h3>
-                                    <div className="flex flex-col items-end">
-                                        <span className="text-xs bg-gray-200 px-2 py-1 rounded mb-1">
-                                            ID: {project.id}
-                                        </span>
-                                        <span className="text-xs bg-gray-200 px-2 py-1 rounded">
-                                            {project.author ? `by ${project.author}` : 'Sistema'}
-                                        </span>
-                                    </div>
-                                </div>
-                                <p className="text-gray-700 mb-2">{project.description}</p>
-                                <div className="text-sm text-gray-600 mb-3">
-                                    <p>Partecipanti: {projectUsers.length}</p>
-                                    {projectUsers.length > 0 && (
-                                        <p className="text-xs mt-1">
-                                            {projectUsers.map(u => u.name).join(', ')}
-                                        </p>
-                                    )}
-                                </div>
-
-                                {/* Azioni disponibili per l'utente */}
-                                {user && (
-                                    <div className="mt-4 space-y-2">
-                                        {/* Partecipazione al progetto */}
-                                        {!isParticipant ? (
-                                            <button
-                                                onClick={() => handleJoinProject(project.id)}
-                                                className="w-full bg-blue-500 text-white px-3 py-2 rounded text-sm hover:bg-blue-600"
-                                            >
-                                                Partecipa
-                                            </button>
-                                        ) : (
-                                            <button
-                                                onClick={() => handleLeaveProject(project.id)}
-                                                className="w-full bg-orange-500 text-white px-3 py-2 rounded text-sm hover:bg-orange-600"
-                                            >
-                                                Abbandona Progetto
-                                            </button>
-                                        )}
-
-                                        {/* Azioni admin */}
-                                        {canEdit && (
-                                            <div className="flex space-x-2">
-                                                <button
-                                                    onClick={() => handleEditProject(project)}
-                                                    className="flex-1 bg-yellow-500 text-white px-3 py-1 rounded text-sm hover:bg-yellow-600"
-                                                >
-                                                    Modifica
-                                                </button>
-                                                <button
-                                                    onClick={() => handleDeleteProject(project.id, project.name)}
-                                                    className="flex-1 bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-600"
-                                                >
-                                                    Elimina
-                                                </button>
-                                            </div>
-                                        )}
-                                    </div>
-                                )}
-                            </div>
-                        );
-                    })}
+                    {displayProjects.map((project) => (
+                        <WindowsProject
+                            key={project.id}
+                            project={project}
+                            user={user}
+                            onEdit={handleEditProject}
+                            onDelete={handleDeleteProject}
+                            onJoin={handleJoinProject}
+                            onLeave={handleLeaveProject}
+                            projectType="conservation"
+                        />
+                    ))}
                 </div>
 
                 {displayProjects.length === 0 && !loading && (
@@ -398,6 +316,23 @@ const Project: React.FC = () => {
                     </div>
                 )}
             </div>
+
+            {/* Progetti Generali */}
+            {generalProjects.length > 0 && (
+                <div className="mb-8">
+                    <h2 className="text-xl font-semibold mb-4 text-black">Progetti Generali</h2>
+                    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                        {generalProjects.map((project) => (
+                            <WindowsProject
+                                key={project.id}
+                                project={project}
+                                user={user}
+                                projectType="general"
+                            />
+                        ))}
+                    </div>
+                </div>
+            )}
 
             {/* Modale per progetti di conservazione */}
             {showConservationModal && (
