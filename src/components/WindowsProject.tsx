@@ -13,11 +13,13 @@ export interface ConservationProject {
 interface Props {
     project: ConservationProject;
     isAdmin: boolean;
+    isLogged: boolean;
     onDelete: (id: number) => void;
     onUpdate: (updated: ConservationProject) => void;
+    onParticipate: (id: number) => void;
 }
 
-const WindowsProject: React.FC<Props> = ({ project, isAdmin, onDelete, onUpdate }) => {
+const WindowsProject: React.FC<Props> = ({ project, isAdmin, isLogged, onDelete, onUpdate, onParticipate }) => {
     const [isEditing, setIsEditing] = useState(false);
     const [title, setTitle] = useState(project.title);
     const [description, setDescription] = useState(project.description);
@@ -100,7 +102,7 @@ const WindowsProject: React.FC<Props> = ({ project, isAdmin, onDelete, onUpdate 
                     <p className="text-sm mb-3">
                         <strong>Status:</strong> {project.status}
                     </p>
-                    {isAdmin && (
+                    {isAdmin ? (
                         <div className="flex space-x-2">
                             <button
                                 onClick={() => setIsEditing(true)}
@@ -115,7 +117,14 @@ const WindowsProject: React.FC<Props> = ({ project, isAdmin, onDelete, onUpdate 
                                 Elimina
                             </button>
                         </div>
-                    )}
+                    ) : isLogged ? (
+                        <button
+                            onClick={() => onParticipate(project.id)}
+                            className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 transition"
+                        >
+                            Partecipa
+                        </button>
+                    ) : null}
                 </>
             )}
         </div>
