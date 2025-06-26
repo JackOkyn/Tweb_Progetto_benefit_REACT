@@ -5,7 +5,10 @@ export const commentEducationService = {
     deleteComment: async (commentId: number): Promise<void> => {
         const response = await fetch(
             `http://localhost:8080/commentsEducation/${commentId}`,
-            { method: "DELETE" }
+            {
+                method: "DELETE",
+                credentials: "include",
+            }
         );
         if (!response.ok) {
             throw new Error(`Errore DELETE commento ${commentId}`);
@@ -21,6 +24,7 @@ export const commentEducationService = {
             {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
+                credentials: "include",
                 body: JSON.stringify({ educationComment: comment }),
             }
         );

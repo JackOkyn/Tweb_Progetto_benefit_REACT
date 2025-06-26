@@ -23,7 +23,10 @@ export const likeService = {
     ): Promise<boolean> => {
         const res = await fetch(
             `${LIKE_API}/toggle?educationId=${educationId}&userId=${userId}`,
-            { method: "POST" }
+            {
+                method: "POST" ,
+                credentials: "include",
+            }
         );
         if (!res.ok) throw new Error(`Errore toggle: ${res.status}`);
         return await res.json();

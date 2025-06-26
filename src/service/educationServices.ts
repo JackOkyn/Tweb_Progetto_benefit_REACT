@@ -10,6 +10,7 @@ export const educationService = {
         const res = await fetch(EDUCATION_API, {
             method: 'GET',
             headers: { 'Content-Type': 'application/json' },
+            credentials: "include",
         });
         if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
         return res.json();
@@ -20,6 +21,7 @@ export const educationService = {
         const res = await fetch(`${EDUCATION_API}/${id}`, {
             method: 'GET',
             headers: { 'Content-Type': 'application/json' },
+            credentials: "include",
         });
         if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
         return res.json();
@@ -30,6 +32,7 @@ export const educationService = {
         const res = await fetch(EDUCATION_API, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
+            credentials: "include",
             body: JSON.stringify(education),
         });
         if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
@@ -41,6 +44,7 @@ export const educationService = {
         const res = await fetch(`${EDUCATION_API}/${id}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
+            credentials: "include",
             body: JSON.stringify(education),
         });
         if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
@@ -51,6 +55,7 @@ export const educationService = {
     delete: async (id: number): Promise<void> => {
         const res = await fetch(`${EDUCATION_API}/${id}`, {
             method: 'DELETE',
+            credentials: "include",
         });
         if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
     },
@@ -65,6 +70,7 @@ export const educationService = {
             {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
+                credentials: "include",
                 body: JSON.stringify({ educationComment }),
             }
         );
@@ -76,7 +82,10 @@ export const educationService = {
     deleteComment: async (commentId: number): Promise<void> => {
         const res = await fetch(
             `${EDUCATION_API}/comments/${commentId}`,
-            { method: 'DELETE' }
+            {
+                method: 'DELETE' ,
+                credentials: "include",
+            }
         );
         if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
     },
@@ -85,7 +94,10 @@ export const educationService = {
     likeEducation: async (id: number): Promise<Education> => {
         const res = await fetch(
             `${EDUCATION_API}/${id}/like`,
-            { method: 'PUT' }
+            {
+                method: 'PUT' ,
+                credentials: "include",
+            }
         );
         if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
         return res.json();

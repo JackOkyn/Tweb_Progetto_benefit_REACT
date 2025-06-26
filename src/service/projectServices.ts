@@ -11,6 +11,7 @@ export const projectService = {
                 headers: {
                     'Content-Type': 'application/json',
                 },
+                credentials: "include",
             });
 
             if (!response.ok) {
@@ -31,6 +32,7 @@ export const projectService = {
             const response = await fetch(`${PROJECT_API}/${id}`, {
                 method: 'GET',
                 headers: { 'Content-Type': 'application/json' },
+                credentials: "include",
             });
 
             if (!response.ok) {
@@ -65,6 +67,7 @@ export const projectService = {
             const response = await fetch(PROJECT_API, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
+                credentials: "include",
                 body: JSON.stringify(projectData)
             });
 
@@ -96,6 +99,7 @@ export const projectService = {
             const response = await fetch(`${PROJECT_API}/${id}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
+                credentials: "include",
                 body: JSON.stringify(projectData)
             });
 
@@ -121,7 +125,8 @@ export const projectService = {
     delete: async (id: number): Promise<void> => {
         try {
             const response = await fetch(`${PROJECT_API}/${id}`, {
-                method: 'DELETE'
+                method: 'DELETE',
+                credentials: "include",
             });
 
             if (!response.ok) {
@@ -142,6 +147,7 @@ export const projectService = {
             const response = await fetch(`${PROJECT_API}/${projectId}/participants`, {
                 method: 'GET',
                 headers: { 'Content-Type': 'application/json' },
+                credentials: "include",
             });
 
             if (!response.ok) {
@@ -160,7 +166,8 @@ export const projectService = {
         try {
             const response = await fetch(`${PROJECT_API}/${projectId}/participants/${userId}`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' }
+                headers: { 'Content-Type': 'application/json' },
+                credentials: "include",
             });
 
             if (!response.ok) {
@@ -176,7 +183,8 @@ export const projectService = {
     removeParticipant: async (projectId: number, userId: number): Promise<void> => {
         try {
             const response = await fetch(`${PROJECT_API}/${projectId}/participants/${userId}`, {
-                method: 'DELETE'
+                method: 'DELETE',
+                credentials: "include",
             });
 
             if (!response.ok) {
@@ -194,6 +202,7 @@ export const projectService = {
             const response = await fetch(`http://localhost:8080/scientific/users/${userId}/projects`, {
                 method: 'GET',
                 headers: { 'Content-Type': 'application/json' },
+                credentials: "include",
             });
 
             if (!response.ok) {
