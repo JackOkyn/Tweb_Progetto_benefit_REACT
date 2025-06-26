@@ -1,7 +1,8 @@
 // src/pages/EducationPage.tsx
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
-import { Education, CommentEducation } from "../types/Education";
+import { Education} from "../types/Education";
+import { CommentEducation } from "../types/CommentEducation";
 import { educationService } from "../service/educationServices";
 import { commentEducationService } from "../service/commentEducationService";
 import WindowsEducation from "../components/WindowsEducation";

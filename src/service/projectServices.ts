@@ -1,6 +1,6 @@
 import { ConservationProject } from '../types/ConservationProject';
 
-const PROJECT_API = 'http://localhost:8080/scientific/projects';
+const PROJECT_API = 'http://localhost:8080/conservation-projects';
 
 export const projectService = {
     // 1. Ottieni tutti i progetti
