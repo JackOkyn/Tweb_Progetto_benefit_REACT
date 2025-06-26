@@ -7,8 +7,10 @@ export interface User {
 
 export interface ConservationProject {
     id: number;
-    name: string;
+    title: string;
     description: string;
-    users?: User[];
-    author?: string;
+    startDate: string | null;
+    endDate: string | null;
+    status: string;
+    participants: User[];
 }
