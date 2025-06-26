@@ -27,7 +27,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     /** Ripristina sessione al montaggio */
     useEffect(() => {
         (async () => {
-
             try {
                 const res = await fetch('/session/me', {
                     method: 'GET',
