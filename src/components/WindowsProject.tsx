@@ -1,113 +1,123 @@
-// src/components/WindowsProject.tsx
-import React, { useState } from "react";
-import { ProjectData, useProjects } from "../context/ProjectsContext";
-import { useAuth } from "../context/AuthContext";
-import EditProjectModal from "./EditProjectModal";
+import React, { useState } from 'react';
 
-interface WindowsProjectProps {
-    project: ProjectData;
+export interface ConservationProject {
+    id: number;
+    title: string;
+    description: string;
+    startDate: string;
+    endDate: string;
+    status: string;
+    participants: Array<{ id: number; username: string }>;
 }
 
-const WindowsProject: React.FC<WindowsProjectProps> = ({ project }) => {
-    const { user } = useAuth();
-    const {
-        myActivity,
-        joinProject,
-        leaveProject,
-        updateProject,
-    } = useProjects();
+interface Props {
+    project: ConservationProject;
+    isAdmin: boolean;
+    onDelete: (id: number) => void;
+    onUpdate: (updated: ConservationProject) => void;
+}
 
-    const [showEditModal, setShowEditModal] = useState(false);
+const WindowsProject: React.FC<Props> = ({ project, isAdmin, onDelete, onUpdate }) => {
+    const [isEditing, setIsEditing] = useState(false);
+    const [title, setTitle] = useState(project.title);
+    const [description, setDescription] = useState(project.description);
+    const [startDate, setStartDate] = useState(project.startDate.slice(0, 16));
+    const [endDate, setEndDate] = useState(project.endDate.slice(0, 16));
+    const [status, setStatus] = useState(project.status);
 
-    // verifichiamo se l'utente partecipa già
-    const isParticipant = myActivity.some((p) => p.id === project.id);
-
-    const handleToggleParticipation = () => {
-        if (!user) return;
-        if (isParticipant) {
-            leaveProject(project.id);
-        } else {
-            joinProject(project.id);
-        }
-    };
-
-    // Apertura/chiusura modale
-    const handleOpenEdit = () => {
-        setShowEditModal(true);
-    };
-    const handleCloseEdit = () => {
-        setShowEditModal(false);
-    };
-
-    // Salvataggio modifiche (riceviamo un ProjectData aggiornato)
-    const handleSaveEdit = (updated: ProjectData) => {
-        // In futuro: fetch(`/api/projects/${updated.id}`, { method: "PUT", body: JSON.stringify(updated) } )
-        updateProject(updated);
-        // Il context aggiorna i progetti. Questo componente si ridisegna con i nuovi campi.
+    const handleSave = () => {
+        onUpdate({
+            ...project,
+            title,
+            description,
+            startDate,
+            endDate,
+            status,
+        });
+        setIsEditing(false);
     };
 
     return (
-        <div className="relative p-4 bg-white rounded shadow-md hover:shadow-lg transition mb-4 w-full mx-auto">
-            {/* Bottone Modifica Progetto, in alto a destra, visibile solo se l'utente è admin */}
-            {user?.roles === "ADMIN" && (
-                <button
-                    onClick={handleOpenEdit}
-                    className="absolute top-2 right-2 bg-orange-600 text-white px-2 py-1 rounded hover:bg-orange-700 transition"
-                >
-                    Modifica progetto
-                </button>
+        <div className="bg-white p-4 rounded-lg shadow">
+            {isEditing ? (
+                <div className="space-y-3">
+                    <input
+                        type="text"
+                        className="border rounded w-full px-2 py-1"
+                        value={title}
+                        onChange={e => setTitle(e.target.value)}
+                    />
+                    <textarea
+                        className="border rounded w-full px-2 py-1"
+                        value={description}
+                        onChange={e => setDescription(e.target.value)}
+                    />
+                    <div className="grid grid-cols-2 gap-4">
+                        <input
+                            type="datetime-local"
+                            className="border rounded w-full px-2 py-1"
+                            value={startDate}
+                            onChange={e => setStartDate(e.target.value)}
+                        />
+                        <input
+                            type="datetime-local"
+                            className="border rounded w-full px-2 py-1"
+                            value={endDate}
+                            onChange={e => setEndDate(e.target.value)}
+                        />
+                    </div>
+                    <input
+                        type="text"
+                        className="border rounded w-full px-2 py-1"
+                        value={status}
+                        onChange={e => setStatus(e.target.value)}
+                    />
+                    <div className="flex justify-end space-x-2">
+                        <button
+                            onClick={handleSave}
+                            className="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 transition"
+                        >
+                            Salva
+                        </button>
+                        <button
+                            onClick={() => setIsEditing(false)}
+                            className="bg-gray-300 px-3 py-1 rounded hover:bg-gray-400 transition"
+                        >
+                            Annulla
+                        </button>
+                    </div>
+                </div>
+            ) : (
+                <>
+                    <h3 className="text-xl font-semibold mb-2">{project.title}</h3>
+                    <p className="mb-2">{project.description}</p>
+                    <p className="text-sm mb-1">
+                        <strong>Inizio:</strong> {new Date(project.startDate).toLocaleString()}
+                    </p>
+                    <p className="text-sm mb-1">
+                        <strong>Fine:</strong> {new Date(project.endDate).toLocaleString()}
+                    </p>
+                    <p className="text-sm mb-3">
+                        <strong>Status:</strong> {project.status}
+                    </p>
+                    {isAdmin && (
+                        <div className="flex space-x-2">
+                            <button
+                                onClick={() => setIsEditing(true)}
+                                className="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600 transition"
+                            >
+                                Modifica
+                            </button>
+                            <button
+                                onClick={() => onDelete(project.id)}
+                                className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 transition"
+                            >
+                                Elimina
+                            </button>
+                        </div>
+                    )}
+                </>
             )}
-
-            <div className="flex items-center mb-2">
-                <svg
-                    className="w-5 h-5 mr-1 text-blue-500"
-                    fill="currentColor"
-                    viewBox="0 0 24 24"
-                >
-                    <path d="M12 12c2.21 0
-          4-1.79 4-4S14.21 4 12 4s-4
-          1.79-4 4 1.79 4 4 4zm0
-          2c-2.67 0-8 1.34-8
-          4v2h16v-2c0-2.66-5.33-4-8-4z" />
-                </svg>
-                <span className="font-semibold">{project.author}</span>
-            </div>
-
-            <h2 className="text-lg font-bold mb-2">{project.title}</h2>
-            <img
-                src={project.imageUrl}
-                alt={project.title}
-                className="w-full h-48 mb-2 rounded"
-            />
-            <p className="text-gray-700 mb-4">{project.description}</p>
-
-            <div className="flex items-center space-x-4">
-                {user && (
-                    <button
-                        onClick={handleToggleParticipation}
-                        className={`
-              px-4 py-2 rounded transition text-white
-              ${isParticipant
-                            ? "bg-orange-600 hover:bg-orange-700"
-                            : "bg-green-500 hover:bg-green-600"
-                        }
-            `}
-                    >
-                        {isParticipant ? "Annulla partecipazione" : "Partecipo"}
-                    </button>
-                )}
-                <span className="text-gray-700">
-          {project.participants} partecipanti
-        </span>
-            </div>
-
-            {/* Modale per modificare il progetto */}
-            <EditProjectModal
-                isOpen={showEditModal}
-                onClose={handleCloseEdit}
-                project={project}
-                onSave={handleSaveEdit}
-            />
         </div>
     );
 };

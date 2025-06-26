@@ -5,18 +5,24 @@ export default defineConfig({
   plugins: [react()],
   server: {
     proxy: {
-      // tutte le chiamate che iniziano con /session
+      // sessioni e autenticazione
       '/session': {
         target: 'http://localhost:8080',
         changeOrigin: true,
         secure: false,
       },
-      // tutte le chiamate che iniziano con /users
+      // utenti
       '/users': {
         target: 'http://localhost:8080',
         changeOrigin: true,
         secure: false,
       },
+      // progetti di conservazione
+      '/conservation-projects': {
+        target: 'http://localhost:8080',
+        changeOrigin: true,
+        secure: false,
+      }
     }
   }
 })
