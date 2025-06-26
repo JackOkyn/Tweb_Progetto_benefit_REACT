@@ -1,28 +1,22 @@
 import React, { useState } from 'react';
+import {ConservationProject} from "../types/ConservationProject.ts";
 
-export interface ConservationProject {
-    id: number;
-    title: string;
-    description: string;
-    startDate: string;
-    endDate: string;
-    status: string;
-    participants: Array<{ id: number; username: string }>;
-}
 
 interface Props {
     project: ConservationProject;
     isAdmin: boolean;
+    isLogged: boolean;
     onDelete: (id: number) => void;
     onUpdate: (updated: ConservationProject) => void;
+    onParticipate: (id: number) => void;
 }
 
-const WindowsProject: React.FC<Props> = ({ project, isAdmin, onDelete, onUpdate }) => {
+const WindowsProject: React.FC<Props> = ({ project, isAdmin, isLogged, onDelete, onUpdate, onParticipate }) => {
     const [isEditing, setIsEditing] = useState(false);
     const [title, setTitle] = useState(project.title);
     const [description, setDescription] = useState(project.description);
-    const [startDate, setStartDate] = useState(project.startDate.slice(0, 16));
-    const [endDate, setEndDate] = useState(project.endDate.slice(0, 16));
+    const [startDate, setStartDate] = useState(project.startDate);
+    const [endDate, setEndDate] = useState(project.endDate);
     const [status, setStatus] = useState(project.status);
 
     const handleSave = () => {
@@ -35,6 +29,12 @@ const WindowsProject: React.FC<Props> = ({ project, isAdmin, onDelete, onUpdate 
             status,
         });
         setIsEditing(false);
+    };
+    const formatDateForInput = (value: string | null): string => {
+        if (!value) return '';
+        const date = new Date(value);
+        const iso = date.toISOString();
+        return iso.slice(0, 16); // YYYY-MM-DDTHH:mm
     };
 
     return (
@@ -56,15 +56,16 @@ const WindowsProject: React.FC<Props> = ({ project, isAdmin, onDelete, onUpdate 
                         <input
                             type="datetime-local"
                             className="border rounded w-full px-2 py-1"
-                            value={startDate}
+                            value={formatDateForInput(startDate)}
                             onChange={e => setStartDate(e.target.value)}
                         />
                         <input
                             type="datetime-local"
                             className="border rounded w-full px-2 py-1"
-                            value={endDate}
+                            value={formatDateForInput(endDate)}
                             onChange={e => setEndDate(e.target.value)}
                         />
+
                     </div>
                     <input
                         type="text"
@@ -89,18 +90,26 @@ const WindowsProject: React.FC<Props> = ({ project, isAdmin, onDelete, onUpdate 
                 </div>
             ) : (
                 <>
-                    <h3 className="text-xl font-semibold mb-2">{project.title}</h3>
-                    <p className="mb-2">{project.description}</p>
-                    <p className="text-sm mb-1">
-                        <strong>Inizio:</strong> {new Date(project.startDate).toLocaleString()}
+                    <h3 className="text-xl text-black font-semibold mb-2">{project.title}</h3>
+                    <p className="mb-2 text-black">{project.description}</p>
+                    <p className="text-sm mb-1 text-black">
+                        <strong>Inizio:</strong> {project.startDate ? new Date(project.startDate).toLocaleString() : "N/D"}
                     </p>
-                    <p className="text-sm mb-1">
-                        <strong>Fine:</strong> {new Date(project.endDate).toLocaleString()}
+                    <p className="text-sm mb-1 text-black">
+                        <strong>Fine:</strong> {project.endDate ? new Date(project.endDate).toLocaleString() : "N/D"}
                     </p>
-                    <p className="text-sm mb-3">
+                    <p
+                        className={`text-sm mb-3 font-medium ${
+                            project.status.toLowerCase() === 'attivo'
+                                ? 'text-red-600'
+                                : project.status.toLowerCase() === 'completato'
+                                    ? 'text-green-600'
+                                    : 'text-gray-500'
+                        }`}
+                    >
                         <strong>Status:</strong> {project.status}
                     </p>
-                    {isAdmin && (
+                    {isAdmin ? (
                         <div className="flex space-x-2">
                             <button
                                 onClick={() => setIsEditing(true)}
@@ -115,7 +124,14 @@ const WindowsProject: React.FC<Props> = ({ project, isAdmin, onDelete, onUpdate 
                                 Elimina
                             </button>
                         </div>
-                    )}
+                    ) : isLogged ? (
+                        <button
+                            onClick={() => onParticipate(project.id)}
+                            className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 transition"
+                        >
+                            Partecipa
+                        </button>
+                    ) : null}
                 </>
             )}
         </div>

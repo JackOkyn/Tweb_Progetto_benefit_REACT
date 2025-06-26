@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
-import WindowsProject, { ConservationProject } from '../components/WindowsProject';
+import  { ConservationProject } from '../types/ConservationProject';
+import WindowsProject from '../components/WindowsProject';
 import {
     getAllProjects,
     createProject,
@@ -11,7 +12,8 @@ import {
 
 const Project: React.FC = () => {
     const { user } = useAuth();
-    const isAdmin = user?.role === 'admin';
+    const isAdmin = user?.role === 'ADMIN';
+    const isLogged = Boolean(user);
 
     const [projects, setProjects] = useState<ConservationProject[]>([]);
     const [loading, setLoading] = useState(false);
@@ -30,7 +32,8 @@ const Project: React.FC = () => {
         try {
             const data = await getAllProjects();
             setProjects(data);
-        } catch (err: any) {
+        }
+        catch (err: any) {
             setError(err.message);
         } finally {
             setLoading(false);
@@ -51,6 +54,7 @@ const Project: React.FC = () => {
                 startDate: newStartDate,
                 endDate: newEndDate,
                 status: newStatus,
+                participants: [],
             };
             await createProject(payload);
             setNewTitle('');
@@ -60,7 +64,8 @@ const Project: React.FC = () => {
             setNewStatus('');
             setShowCreateForm(false);
             fetchProjects();
-        } catch (err: any) {
+        }
+        catch (err: any) {
             setError(err.message);
         }
     };
@@ -75,25 +80,29 @@ const Project: React.FC = () => {
         }
     };
 
-    const handleUpdate = async (updated: ConservationProject) => {
-        try {
-            const payload: ProjectDTO = {
-                title: updated.title,
-                description: updated.description,
-                startDate: updated.startDate,
-                endDate: updated.endDate,
-                status: updated.status,
-            };
-            await updateProject(updated.id, payload);
-            fetchProjects();
-        } catch (err: any) {
-            setError(err.message);
-        }
+    const handleUpdate = async (project: ConservationProject) => {
+        const dto: ProjectDTO = {
+            id: project.id,
+            title: project.title,
+            description: project.description,
+            startDate: project.startDate + ':00',
+            endDate:   project.endDate   + ':00',
+            status: project.status,
+            participants: project.participants.map(u => ({ id: u.id })),
+        };
+        await updateProject(project.id, dto);
+        fetchProjects();
+    };
+
+
+    // Placeholder per Futuro "Partecipa"
+    const handleParticipate = (id: number) => {
+        console.log(`Partecipa a progetto ${id}`);
     };
 
     return (
         <div className="p-6">
-            <h1 className="text-2xl font-bold mb-4">Progetti di Conservazione</h1>
+            <h1 className="text-2xl text-black font-bold mb-4">Progetti di Conservazione</h1>
             {error && <div className="text-red-600 mb-4">{error}</div>}
 
             {isAdmin && (
@@ -102,7 +111,7 @@ const Project: React.FC = () => {
                         onClick={() => setShowCreateForm(true)}
                         className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition"
                     >
-                        Crea nuovo Progetto
+                        Nuovo progetto
                     </button>
                 </div>
             )}
@@ -190,8 +199,10 @@ const Project: React.FC = () => {
                             key={project.id}
                             project={project}
                             isAdmin={isAdmin}
+                            isLogged={isLogged}
                             onDelete={handleDelete}
                             onUpdate={handleUpdate}
+                            onParticipate={handleParticipate}
                         />
                     ))}
                 </div>
