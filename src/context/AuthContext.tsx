@@ -1,82 +1,116 @@
-import React, { createContext, useContext, useState } from "react";
+import React, { createContext, useContext, useState, useEffect } from 'react';
 
-/** Ruoli dell'utente */
-export type UserRole = "admin" | "community";
-
-/** dati utente con ID. */
+/** Dati utente ricevuti dal back-end */
 export interface UserData {
     id: number;
-    nickname: string;
+    username: string;
     email: string;
-    password: string;
-    role: UserRole;
+    role: string;
 }
 
-/** Struttura del context: user + metodi di login/logout. */
+/** Struttura del context */
 interface AuthContextProps {
     user: UserData | null;
-    login: (email: string, password: string) => void;
-    signUp: (nickname: string, email: string, password: string) => void;
-    logout: () => void;
+    login: (username: string, password: string) => Promise<void>;
+    logout: () => Promise<void>;
 }
 
-/** context con valori di default. */
 const AuthContext = createContext<AuthContextProps>({
     user: null,
-    login: () => {},
-    signUp: () => {},
-    logout: () => {},
+    login: async () => {},
+    logout: async () => {},
 });
 
-/** Provider che avvolge l’applicazione e fornisce lo stato utente. */
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [user, setUser] = useState<UserData | null>(null);
 
-    /**
-     * Funzione di login fittizia:
-     * - Se la password è "admin", l’utente avrà ruolo admin e id 1,
-     * - Altrimenti sarà community con id 2.
-     */
-    const login = (email: string, password: string) => {
-        if (!email || !password) return;
+    /** Ripristina sessione al montaggio */
+    useEffect(() => {
+        (async () => {
+            try {
+                const res = await fetch('/session/me', {
+                    method: 'GET',
+                    credentials: 'include',
+                });
+                if (res.ok) {
+                    const { username } = (await res.json()) as { username: string };
+                    const usersRes = await fetch('/users', {
+                        method: 'GET',
+                        credentials: 'include',
+                    });
+                    if (usersRes.ok) {
+                        const allUsers = (await usersRes.json()) as Array<
+                            UserData & { role: { id: number; name: string } }
+                        >;
+                        const found = allUsers.find(u => u.username === username);
+                        if (found) {
+                            setUser({
+                                id: found.id,
+                                username: found.username,
+                                email: found.email,
+                                role: found.role.name,
+                            });
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('Errore ripristino sessione:', error);
+            }
+        })();
+    }, []);
 
-        const role: UserRole = password === "admin" ? "admin" : "community";
-        const id = role === "admin" ? 1 : 2;
-
-        const fakeUser: UserData = {
-            id,
-            nickname: role === "admin" ? "Mario" : "Luigi",
-            email,
-            password,
-            role,
-        };
-
-        setUser(fakeUser);
+    /** Effettua login */
+    const login = async (username: string, password: string) => {
+        const query = new URLSearchParams({ username, password }).toString();
+        const res = await fetch(`/session/login?${query}`, {
+            method: 'GET',
+            credentials: 'include',
+        });
+        if (res.ok) {
+            const { username: sessionUser } = (await res.json()) as { username: string };
+            const usersRes = await fetch('/users', {
+                method: 'GET',
+                credentials: 'include',
+            });
+            if (!usersRes.ok) {
+                throw new Error('Impossibile recuperare dettagli utente');
+            }
+            const allUsers = (await usersRes.json()) as Array<
+                UserData & { role: { id: number; name: string } }
+            >;
+            const found = allUsers.find(u => u.username === sessionUser);
+            if (!found) {
+                throw new Error('Utente non trovato dopo login');
+            }
+            setUser({
+                id: found.id,
+                username: found.username,
+                email: found.email,
+                role: found.role.name,
+            });
+        } else if (res.status === 401) {
+            throw new Error('Credenziali non valide');
+        } else {
+            throw new Error(`Errore login: ${res.status}`);
+        }
     };
 
-    /**
-     * Funzione di registrazione fittizia:
-     * Assegna ruolo "community" e genera un id casuale.
-     */
-    const signUp = (nickname: string, email: string, password: string) => {
-        const fakeUser: UserData = {
-            id: Math.floor(Math.random() * 10000), // ID simulato
-            nickname,
-            email,
-            password,
-            role: "community",
-        };
-
-        setUser(fakeUser);
-    };
-
-    /** Funzione di logout */
-    const logout = () => {
-        setUser(null);
+    /** Effettua logout */
+    const logout = async () => {
+        try {
+            await fetch('/session/logout', {
+                method: 'GET',
+                credentials: 'include',
+            });
+        } catch (error) {
+            console.error('Errore logout:', error);
+        } finally {
+            setUser(null);
+        }
     };
 
     return (
-        <AuthContext.Provider value={{ user, login, signUp, logout }}>
+        <AuthContext.Provider value={{ user, login, logout }}>
             {children}
         </AuthContext.Provider>
     );
