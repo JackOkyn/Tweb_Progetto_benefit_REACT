@@ -34,7 +34,7 @@ const EducationPage: React.FC = () => {
             id: edu.id,
             titleEducation: edu.titleEducation,
             descriptionEducation: edu.descriptionEducation,
-            userId: edu.userId,
+            userId: edu.user,
         });
         setModalOpen(true);
     };
@@ -146,7 +146,7 @@ const EducationPage: React.FC = () => {
                     id={edu.id}
                     title={edu.titleEducation}
                     author={edu.user?.username || "Sconosciuto"}
-                    likes={edu.likes ?? 0}
+                    likes={edu.likesEducation ?? 0}
                     description={edu.descriptionEducation}
                     comments={edu.commentEducation}
                     onLike={() => {}}

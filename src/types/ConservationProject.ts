@@ -12,5 +12,5 @@ export interface ConservationProject {
     startDate: string | null;
     endDate: string | null;
     status: string;
-    participants: User[];
+    participants?: User[];
 }

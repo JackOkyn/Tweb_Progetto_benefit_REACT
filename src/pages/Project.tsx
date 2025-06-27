@@ -9,6 +9,7 @@ import {
     deleteProject,
     ProjectDTO,
 } from '../service/projectServices';
+import {conservationService} from "../service/serviceMyActivity.ts";
 
 const Project: React.FC = () => {
     const { user } = useAuth();
@@ -202,7 +203,9 @@ const Project: React.FC = () => {
                             isLogged={isLogged}
                             onDelete={handleDelete}
                             onUpdate={handleUpdate}
-                            onParticipate={handleParticipate}
+                            user={user}
+                            onJoin={(id) => conservationService.joinProject(id, user!.id).then(fetchProjects)}
+                            onLeave={(id) => conservationService.leaveProject(id, user!.id).then(fetchProjects)}
                         />
                     ))}
                 </div>

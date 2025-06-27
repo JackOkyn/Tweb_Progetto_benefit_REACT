@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import {ConservationProject} from "../types/ConservationProject.ts";
-
+import { ConservationProject } from "../types/ConservationProject";
+import { UserData } from "../context/AuthContext";
 
 interface Props {
     project: ConservationProject;
@@ -8,10 +8,13 @@ interface Props {
     isLogged: boolean;
     onDelete: (id: number) => void;
     onUpdate: (updated: ConservationProject) => void;
-    onParticipate: (id: number) => void;
+
+    user: UserData | null;
+    onJoin: (id: number) => void;
+    onLeave: (id: number) => void;
 }
 
-const WindowsProject: React.FC<Props> = ({ project, isAdmin, isLogged, onDelete, onUpdate, onParticipate }) => {
+const WindowsProject: React.FC<Props> = ({ project, isAdmin, isLogged, onDelete, onUpdate,  user, onJoin, onLeave }) => {
     const [isEditing, setIsEditing] = useState(false);
     const [title, setTitle] = useState(project.title);
     const [description, setDescription] = useState(project.description);
@@ -19,6 +22,7 @@ const WindowsProject: React.FC<Props> = ({ project, isAdmin, isLogged, onDelete,
     const [endDate, setEndDate] = useState(project.endDate);
     const [status, setStatus] = useState(project.status);
 
+    const joined = project.participants?.some(p => p.id === user?.id) ?? false;
     const handleSave = () => {
         onUpdate({
             ...project,
@@ -30,6 +34,7 @@ const WindowsProject: React.FC<Props> = ({ project, isAdmin, isLogged, onDelete,
         });
         setIsEditing(false);
     };
+
     const formatDateForInput = (value: string | null): string => {
         if (!value) return '';
         const date = new Date(value);
@@ -65,7 +70,6 @@ const WindowsProject: React.FC<Props> = ({ project, isAdmin, isLogged, onDelete,
                             value={formatDateForInput(endDate)}
                             onChange={e => setEndDate(e.target.value)}
                         />
-
                     </div>
                     <input
                         type="text"
@@ -126,12 +130,28 @@ const WindowsProject: React.FC<Props> = ({ project, isAdmin, isLogged, onDelete,
                         </div>
                     ) : isLogged ? (
                         <button
-                            onClick={() => onParticipate(project.id)}
-                            className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 transition"
+                            onClick={() => joined ? onLeave(project.id) : onJoin(project.id)}
+                            className={`px-3 py-1 rounded text-white transition ${
+                                joined ? 'bg-red-500 hover:bg-red-600' : 'bg-blue-500 hover:bg-blue-600'
+                            }`}
                         >
-                            Partecipa
+                            {joined ? 'Lascia' : 'Partecipa'}
                         </button>
                     ) : null}
+                    {project.participants && project.participants.length > 0 && (
+                        <div className="mt-3">
+                            <details className="cursor-pointer">
+                                <summary className="text-sm text-blue-600 font-medium hover:underline">
+                                    🔥 Partecipanti ({project.participants.length})
+                                </summary>
+                                <ul className="list-disc ml-6 mt-2 text-gray-700">
+                                    {project.participants.map(p => (
+                                        <li key={p.id}>{p.username || p.name}</li>
+                                    ))}
+                                </ul>
+                            </details>
+                        </div>
+                    )}
                 </>
             )}
         </div>

@@ -1,6 +1,6 @@
 // src/services/projectService.ts
 import { ConservationProject } from '../types/ConservationProject';
-
+import { User } from '../types/User';
 const API_BASE = '/conservation-projects';
 
 export interface ProjectDTO {
@@ -63,21 +63,12 @@ export async function deleteProject(id: number): Promise<void> {
  * Partecipa ad un progetto (placeholder)
  * Appena avrai l’endpoint corretto, sostituisci URL e metodo.
  */
-export async function participateInProject(
-    projectId: number,
-    userId: number
-): Promise<void> {
-    // esempio di chiamata: POST /conservation-projects/{projectId}/participants
-    const res = await fetch(
-        `${API_BASE}/${projectId}/participants`,
-        {
-            method: 'POST',
-            credentials: 'include',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ userId }),
-        }
-    );
-    if (!res.ok) {
-        throw new Error(`Errore partecipazione progetto ${projectId}: ${res.status}`);
-    }
+export async function getParticipants(projectId: number): Promise<User[]> {
+    const res = await fetch(`http://localhost:8080/scientific/conservation/${projectId}/participants`, {
+        credentials: "include"
+    });
+    if (!res.ok) throw new Error("Errore caricamento partecipanti");
+    return res.json();
+
+
 }
