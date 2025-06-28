@@ -32,7 +32,11 @@ const Project: React.FC = () => {
         setLoading(true);
         try {
             const data = await getAllProjects();
-            setProjects(data);
+            const normalized = data.map(p => ({
+                ...p,
+                participants: p.participants ?? []
+            }));
+            setProjects(normalized);
         }
         catch (err: any) {
             setError(err.message);

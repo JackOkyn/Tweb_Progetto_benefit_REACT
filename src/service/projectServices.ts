@@ -9,7 +9,7 @@ export interface ProjectDTO {
     startDate: string;
     endDate: string;
     status: string;
-    participants: { id: number }[];
+
 }
 
 export async function getAllProjects(): Promise<ConservationProject[]> {

@@ -1,6 +1,8 @@
-import React, { useState } from 'react';
+import React, {useEffect, useState} from 'react';
 import { ConservationProject } from "../types/ConservationProject";
 import { UserData } from "../context/AuthContext";
+import {getParticipants} from "../service/projectServices.ts";
+import {User} from "../types/User.ts";
 
 interface Props {
     project: ConservationProject;
@@ -41,6 +43,16 @@ const WindowsProject: React.FC<Props> = ({ project, isAdmin, isLogged, onDelete,
         const iso = date.toISOString();
         return iso.slice(0, 16); // YYYY-MM-DDTHH:mm
     };
+    const [localParticipants, setLocalParticipants] = useState<User[]>([]);
+    useEffect(() => {
+        if (!project.participants || project.participants.length === 0) {
+            getParticipants(project.id)
+                .then((data) => {
+                    setLocalParticipants(data);
+                })
+                .catch(err => console.error("Errore caricamento partecipanti:", err));
+        }
+    }, [project.id]);
 
     return (
         <div className="bg-white p-4 rounded-lg shadow">
@@ -138,15 +150,20 @@ const WindowsProject: React.FC<Props> = ({ project, isAdmin, isLogged, onDelete,
                             {joined ? 'Lascia' : 'Partecipa'}
                         </button>
                     ) : null}
-                    {project.participants && project.participants.length > 0 && (
+                    {localParticipants && localParticipants.length > 0 && (
                         <div className="mt-3">
                             <details className="cursor-pointer">
                                 <summary className="text-sm text-blue-600 font-medium hover:underline">
-                                    🔥 Partecipanti ({project.participants.length})
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                         stroke-width="1.5" stroke="currentColor" className="size-6">
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                              d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z"/>
+                                    </svg>
+                                    Partecipanti ({localParticipants.length})
                                 </summary>
                                 <ul className="list-disc ml-6 mt-2 text-gray-700">
-                                    {project.participants.map(p => (
-                                        <li key={p.id}>{p.username || p.name}</li>
+                                    {localParticipants.map(p => (
+                                        <li key={p.id}>{p.username}</li>
                                     ))}
                                 </ul>
                             </details>
