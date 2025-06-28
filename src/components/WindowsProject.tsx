@@ -10,7 +10,6 @@ interface Props {
     isLogged: boolean;
     onDelete: (id: number) => void;
     onUpdate: (updated: ConservationProject) => void;
-
     user: UserData | null;
     onJoin: (id: number) => void;
     onLeave: (id: number) => void;
@@ -151,7 +150,7 @@ const WindowsProject: React.FC<Props> = ({ project, isAdmin, isLogged, onDelete,
                         </button>
                     ) : null}
                     {localParticipants && localParticipants.length > 0 && (
-                        <div className="mt-3">
+                        <div className="mt-3 flex-auto">
                             <details className="cursor-pointer">
                                 <summary className="text-sm text-blue-600 font-medium hover:underline">
                                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
