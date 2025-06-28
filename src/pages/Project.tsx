@@ -90,8 +90,8 @@ const Project: React.FC = () => {
             id: project.id,
             title: project.title,
             description: project.description,
-            startDate: project.startDate + ':00',
-            endDate:   project.endDate   + ':00',
+            startDate: project.startDate ?? "",
+            endDate:   project.endDate ?? "",
             status: project.status,
             participants: project.participants.map(u => ({ id: u.id })),
         };
