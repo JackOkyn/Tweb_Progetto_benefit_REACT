@@ -152,7 +152,7 @@ const WindowsProject: React.FC<Props> = ({ project, isAdmin, isLogged, onDelete,
                     {localParticipants && localParticipants.length > 0 && (
                         <div className="mt-3 flex-auto">
                             <details className="cursor-pointer">
-                                <summary className="text-sm text-blue-600 font-medium hover:underline">
+                                <summary className="list-none text-blue-600 cursor-pointer flex items-center space-x-2">
                                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                          stroke-width="1.5" stroke="currentColor" className="size-6">
                                         <path stroke-linecap="round" stroke-linejoin="round"
