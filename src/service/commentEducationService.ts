@@ -1,4 +1,3 @@
-// src/services/commentEducationService.ts
 import { CommentEducation } from "../types/CommentEducation";
 
 export const commentEducationService = {

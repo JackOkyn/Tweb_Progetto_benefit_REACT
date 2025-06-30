@@ -35,7 +35,7 @@ const AuthButtons: React.FC = () => {
         setShowProfileDropdown(false);
     };
 
-    // Se l'utente è loggato, mostriamo il menu profilo
+    // Se l'utente è loggato, mostriamo il profilo
     if (user) {
         return (
             <div className="relative">

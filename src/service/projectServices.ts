@@ -1,4 +1,3 @@
-// src/services/projectService.ts
 import { ConservationProject } from '../types/ConservationProject';
 import { User } from '../types/User';
 const API_BASE = '/conservation-projects';
@@ -60,8 +59,7 @@ export async function deleteProject(id: number): Promise<void> {
 }
 
 /**
- * Partecipa ad un progetto (placeholder)
- * Appena avrai l’endpoint corretto, sostituisci URL e metodo.
+ * Partecipa ad un progetto
  */
 export async function getParticipants(projectId: number): Promise<User[]> {
     const res = await fetch(`http://localhost:8080/scientific/conservation/${projectId}/participants`, {

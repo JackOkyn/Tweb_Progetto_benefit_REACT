@@ -1,4 +1,3 @@
-// src/components/NewProjectModal.tsx
 
 import React, { useState } from "react";
 

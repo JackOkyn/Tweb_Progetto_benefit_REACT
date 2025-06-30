@@ -1,4 +1,3 @@
-// src/components/NewEducationModal.tsx
 import React, { useState } from "react";
 
 interface NewEducationModalProps {

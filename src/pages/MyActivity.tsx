@@ -1,4 +1,3 @@
-// src/pages/MyActivity.tsx
 import React from "react";
 import WindowsMyActivity from "../components/WindowsMyActivity";
 

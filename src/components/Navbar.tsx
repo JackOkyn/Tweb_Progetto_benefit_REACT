@@ -1,6 +1,5 @@
-
 import logo from "../assets/icon.png";
-import AuthButtons from "./AuthButtons"; // se lo hai chiamato così
+import AuthButtons from "./AuthButtons";
 
 
 const Navbar = () => {

@@ -1,5 +1,3 @@
-// src/services/educationService.ts
-
 import { Education } from '../types/Education';
 import { CommentEducation } from '../types/CommentEducation';
 const EDUCATION_API = 'http://localhost:8080/educations';
